@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MatIA — Geometria Espacial</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0c10;--sur:#111520;--sur2:#181e2e;--bor:#1e2840;
+  --acc:#4f8cff;--acc2:#a78bfa;--acc3:#34d399;
+  --txt:#e8eaf0;--txt2:#8b93a8;--txt3:#4a5168;
+  --ub:#1a2340;--ab:#111826;--glow:rgba(79,140,255,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:15px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── API KEY MODAL ── */
+#modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px}
+#modal.hidden{display:none}
+.mbox{background:var(--sur);border:1px solid var(--bor);border-radius:18px;padding:34px 30px;max-width:420px;width:100%;box-shadow:0 30px 70px rgba(0,0,0,.5);animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.mico{font-size:38px;margin-bottom:12px}
+.mtit{font-family:'Syne',sans-serif;font-weight:800;font-size:21px;margin-bottom:8px;color:var(--txt)}
+.msub{color:var(--txt2);font-size:13.5px;line-height:1.6;margin-bottom:22px}
+.msub a{color:var(--acc);text-decoration:none}
+.msub a:hover{text-decoration:underline}
+.mrow{display:flex;gap:9px;margin-bottom:10px}
+#keyinp{flex:1;background:var(--sur2);border:1px solid var(--bor);border-radius:10px;padding:10px 13px;color:var(--txt);font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
+#keyinp:focus{border-color:var(--acc)}
+#keyinp::placeholder{color:var(--txt3)}
+.mbtn{background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;border-radius:10px;padding:10px 18px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.mbtn:hover{transform:scale(1.04);box-shadow:0 0 16px var(--glow)}
+.mnote{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace}
+.mnote::before{content:'🔒  '}
+.merr{color:#f87171;font-size:12px;margin-top:7px;display:none}
+
+/* ── HEADER ── */
+header{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;border-bottom:1px solid var(--bor);background:rgba(10,12,16,.94);backdrop-filter:blur(12px);flex-shrink:0;z-index:10;position:relative}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 16px var(--glow)}
+.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.logo-sub{font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
+.hright{display:flex;align-items:center;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--acc3);box-shadow:0 0 7px var(--acc3);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.dot-lbl{font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace}
+.hbtn{background:var(--sur2);border:1px solid var(--bor);color:var(--txt2);padding:5px 11px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.hbtn:hover{border-color:var(--acc);color:var(--acc)}
+
+/* ── LEVEL BAR ── */
+.lvl-bar{display:flex;align-items:center;justify-content:center;gap:7px;padding:7px 22px;background:var(--sur);border-bottom:1px solid var(--bor);flex-shrink:0}
+.lvl{font-size:11px;font-family:'DM Mono',monospace;padding:3px 10px;border-radius:20px;border:1px solid var(--bor);color:var(--txt3);transition:all .3s}
+.lvl.on{border-color:var(--acc);color:var(--acc);background:rgba(79,140,255,.1);box-shadow:0 0 9px rgba(79,140,255,.2)}
+.lvl-sep{color:var(--txt3);font-size:11px}
+
+/* ── CHAT ── */
+.chat-wrap{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
+#chat{flex:1;overflow-y:auto;padding:20px 0;scroll-behavior:smooth}
+#chat::-webkit-scrollbar{width:3px}
+#chat::-webkit-scrollbar-thumb{background:var(--bor);border-radius:3px}
+.mw{display:flex;padding:5px 22px;animation:fs .28s ease;max-width:740px;margin:0 auto;width:100%}
+@keyframes fs{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.mw.u{justify-content:flex-end}
+.mw.a{justify-content:flex-start}
+.av{width:30px;height:30px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:2px}
+.mw.a .av{background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 0 10px var(--glow);margin-right:9px}
+.mw.u .av{background:var(--sur2);border:1px solid var(--bor);margin-left:9px;order:2}
+.bub{max-width:min(520px,80vw);padding:11px 15px;border-radius:13px;line-height:1.65;font-size:14.5px}
+.mw.a .bub{background:var(--ab);border:1px solid var(--bor);border-top-left-radius:3px;color:var(--txt)}
+.mw.u .bub{background:var(--ub);border:1px solid rgba(79,140,255,.3);border-top-right-radius:3px;color:var(--txt)}
+.bub strong{color:var(--acc);font-weight:600}
+.bub em{color:var(--acc2);font-style:italic}
+.bub .fm{font-family:'DM Mono',monospace;font-size:13px;background:rgba(79,140,255,.08);border-left:2px solid var(--acc);padding:7px 11px;margin:7px 0;border-radius:0 7px 7px 0;color:#c8d8ff}
+.bub .en{background:rgba(79,140,255,.08);border:1px solid rgba(79,140,255,.25);border-radius:9px;padding:9px 12px;margin:7px 0}
+.bub .en-t{font-size:11px;font-weight:700;font-family:'Syne',sans-serif;color:var(--acc);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.bub blockquote{border-left:2px solid var(--acc2);padding-left:10px;margin:5px 0;color:var(--txt2);font-style:italic}
+.bub ul{padding-left:16px;margin:3px 0}
+.bub li{margin:2px 0}
+.bub p{margin:3px 0}
+.bub .err{color:#f87171;font-size:12px;font-family:'DM Mono',monospace}
+.typing{display:flex;align-items:center;gap:4px;padding:3px 2px}
+.typing span{width:5px;height:5px;border-radius:50%;background:var(--acc);opacity:.3;animation:bk 1.2s ease infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bk{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+/* ── WELCOME ── */
+#welcome{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 22px;text-align:center;transition:opacity .45s;pointer-events:none;background:var(--bg);z-index:20}
+#welcome.gone{opacity:0;pointer-events:none}
+.wi{font-size:50px;margin-bottom:14px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.wt{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(24px,4vw,36px);line-height:1.1;margin-bottom:8px}
+.wt span{background:linear-gradient(90deg,var(--acc),var(--acc2),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ws{color:var(--txt2);max-width:380px;line-height:1.6;margin-bottom:28px;font-size:14px}
+.wg{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;pointer-events:all;max-width:480px}
+.wc{background:var(--sur2);border:1px solid var(--bor);color:var(--txt);padding:9px 16px;border-radius:11px;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif}
+.wc:hover{border-color:var(--acc2);background:rgba(167,139,250,.1);transform:translateY(-2px);box-shadow:0 5px 18px rgba(0,0,0,.3)}
+
+/* ── CHIPS ── */
+#chips{display:none;gap:7px;overflow-x:auto;padding:9px 22px 5px;flex-shrink:0;scrollbar-width:none;max-width:740px;margin:0 auto;width:100%}
+#chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;background:var(--sur2);border:1px solid var(--bor);color:var(--txt2);padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:'DM Sans',sans-serif}
+.chip:hover{border-color:var(--acc2);color:var(--acc2);background:rgba(167,139,250,.08)}
+
+/* ── INPUT ── */
+.inp-area{padding:12px 22px 16px;border-top:1px solid var(--bor);background:rgba(10,12,16,.96);backdrop-filter:blur(12px);flex-shrink:0;max-width:740px;margin:0 auto;width:100%;position:relative;z-index:10}
+.irow{display:flex;align-items:flex-end;gap:9px;background:var(--sur);border:1px solid var(--bor);border-radius:13px;padding:9px 9px 9px 15px;transition:border-color .2s}
+.irow:focus-within{border-color:var(--acc);box-shadow:0 0 14px var(--glow)}
+#inp{flex:1;background:none;border:none;outline:none;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14.5px;resize:none;max-height:110px;line-height:1.5}
+#inp::placeholder{color:var(--txt3)}
+#sbtn{width:34px;height:34px;border-radius:9px;flex-shrink:0;background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;transition:all .2s;box-shadow:0 0 10px var(--glow)}
+#sbtn:hover{transform:scale(1.07)}
+#sbtn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.hint{font-size:10px;color:var(--txt3);text-align:center;margin-top:7px;font-family:'DM Mono',monospace}
+
+@media(max-width:600px){
+  header{padding:11px 14px}
+  .lvl-bar{padding:6px 14px;gap:5px}
+  .inp-area{padding:9px 12px 13px}
+  #chips{padding:7px 12px 3px}
+  .mw{padding:4px 12px}
+  .bub{font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- API Key Modal -->
+<div id="modal">
+  <div class="mbox">
+    <div class="mico">🔑</div>
+    <div class="mtit">Chave de Acesso</div>
+    <p class="msub">
+      Para usar o MatIA, insira a chave de API da Anthropic.<br><br>
+      Não tem uma? Crie em <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>
+    </p>
+    <div class="mrow">
+      <input type="password" id="keyinp" placeholder="sk-ant-..." autocomplete="off"
+             onkeydown="if(event.key==='Enter')saveKey()"/>
+      <button class="mbtn" onclick="saveKey()">Entrar</button>
+    </div>
+    <div class="merr" id="kerr">Chave inválida. Deve começar com "sk-".</div>
+    <div class="mnote">Salva só neste navegador. Nunca enviada a terceiros.</div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📐</div>
+    <div>
+      <div class="logo-name">MatIA</div>
+      <div class="logo-sub">Geometria Espacial · EM</div>
+    </div>
+  </div>
+  <div class="hright">
+    <div class="dot"></div><span class="dot-lbl">online</span>
+    <button class="hbtn" onclick="reset()">↺ Nova sessão</button>
+    <button class="hbtn" onclick="changeKey()" title="Trocar chave">🔑</button>
+  </div>
+</header>
+
+<div class="lvl-bar">
+  <span class="lvl" id="l1">Nível 1 · Iniciante</span>
+  <span class="lvl-sep">→</span>
+  <span class="lvl" id="l2">Nível 2 · Desenvolvendo</span>
+  <span class="lvl-sep">→</span>
+  <span class="lvl" id="l3">Nível 3 · Avançado</span>
+</div>
+
+<div class="chat-wrap">
+  <div id="chat"></div>
+  <div id="welcome">
+    <div class="wi">🔮</div>
+    <div class="wt"><span>Geometria Espacial</span><br>com inteligência</div>
+    <p class="ws">Tutor virtual para dominar sólidos geométricos — do Ensino Médio ao ENEM. Escolha um tema:</p>
+    <div class="wg">
+      <button class="wc" onclick="go('cilindro')">🥤 Cilindro</button>
+      <button class="wc" onclick="go('cone')">🍦 Cone</button>
+      <button class="wc" onclick="go('esfera')">🔮 Esfera</button>
+      <button class="wc" onclick="go('pirâmide')">🔺 Pirâmide</button>
+      <button class="wc" onclick="go('prisma e paralelepípedo')">📦 Prisma</button>
+      <button class="wc" onclick="go('poliedros e Relação de Euler')">🧊 Poliedros</button>
+    </div>
+  </div>
+</div>
+
+<div id="chips">
+  <button class="chip" onclick="chip('Não entendi, pode explicar de novo?')">🔄 Não entendi</button>
+  <button class="chip" onclick="chip('Me dá uma dica')">💡 Dica</button>
+  <button class="chip" onclick="chip('Quero mais dificuldade')">⬆️ Mais difícil</button>
+  <button class="chip" onclick="chip('Quero um Desafio ENEM!')">🎯 Desafio ENEM</button>
+  <button class="chip" onclick="chip('Me conta uma curiosidade histórica')">📜 Curiosidade</button>
+  <button class="chip" onclick="chip('Como seria a planificação desse sólido?')">📐 Planificação</button>
+</div>
+
+<div class="inp-area">
+  <div class="irow">
+    <textarea id="inp" rows="1" placeholder="Digite sua resposta ou pergunta..."></textarea>
+    <button id="sbtn" onclick="send()">➤</button>
+  </div>
+  <div class="hint">Enter para enviar · Shift+Enter para nova linha</div>
+</div>
+
+<script>
+const SYS=`Você é MatIA, tutor virtual especialista em Geometria Espacial para o Ensino Médio.
+Guie o aluno sem dar respostas prontas. Seja empolgante, curioso e conecte ao ENEM e ao cotidiano.
+
+FORMATAÇÃO:
+- ** negrito, * itálico, > blockquote, - listas
+- [F: expressão] para fórmulas matemáticas
+- [E: mensagem] para alertas ENEM
+- Máximo 4 parágrafos por resposta. UMA pergunta por vez.
+
+FLUXO AO INICIAR (obrigatório):
+1. Boas-vindas com curiosidade histórica do sólido escolhido
+2. Pergunta diagnóstica 1: quais são os elementos do sólido
+3. Pergunta diagnóstica 2: cálculo simples de área ou volume
+4. Classifique: NÍVEL 1 Iniciante / NÍVEL 2 Em desenvolvimento / NÍVEL 3 Avançado
+5. Adapte toda a sessão ao nível
+
+ANTES DE QUALQUER FÓRMULA:
+- Visualização mental com analogia cotidiana
+- Estudo de caso real contextualizado
+
+RESOLUÇÃO (Pólya — 4 etapas, NUNCA pule):
+1. Compreender: dados e incógnita
+2. Planejar: qual fórmula e por quê
+3. Executar: NUNCA resolva pelo aluno — peça que ele tente
+4. Verificar: interpretar no contexto real
+
+DICAS PROGRESSIVAS (quando errar, em ordem):
+- Nível 1: redirecionamento sutil
+- Nível 2: fórmula ou conceito-chave
+- Nível 3: exemplo análogo mais simples
+- Após 3 níveis: explique passo a passo
+
+APÓS CADA PROBLEMA: pegadinha do ENEM + Desafio ENEM opcional.
+TOM: linguagem jovem, celebre tentativas, emojis moderados 📐🔺🔮📦🎯💡
+NUNCA: dê resposta antes das dicas, apresente fórmula antes da visualização.`;
+
+let hist=[],busy=false,started=false,KEY='';
+
+function initKey(){
+  const k=localStorage.getItem('matia_key');
+  if(k){KEY=k;document.getElementById('modal').classList.add('hidden');}
+}
+function saveKey(){
+  const v=document.getElementById('keyinp').value.trim();
+  const e=document.getElementById('kerr');
+  if(!v.startsWith('sk-')){e.style.display='block';return;}
+  e.style.display='none';
+  KEY=v;localStorage.setItem('matia_key',v);
+  document.getElementById('modal').classList.add('hidden');
+}
+function changeKey(){
+  localStorage.removeItem('matia_key');KEY='';
+  document.getElementById('keyinp').value='';
+  document.getElementById('modal').classList.remove('hidden');
+}
+initKey();
+
+function md(t){
+  t=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  t=t.replace(/\[E:\s*([\s\S]*?)\]/g,(_,c)=>`<div class="en"><div class="en-t">💡 ENEM Alert</div>${c.trim()}</div>`);
+  t=t.replace(/\[F:\s*([\s\S]*?)\]/g,(_,c)=>`<div class="fm">${c.trim()}</div>`);
+  t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  t=t.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  t=t.replace(/^&gt;\s(.+)$/gm,'<blockquote>$1</blockquote>');
+  t=t.replace(/^[-•]\s(.+)$/gm,'<li>$1</li>');
+  t=t.replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>');
+  t=t.replace(/<\/ul>\s*<ul>/g,'');
+  return t.split('\n').map(l=>{
+    l=l.trim();if(!l)return'';
+    if(/^<(ul|div|blockquote|li)/.test(l))return l;
+    return`<p>${l}</p>`;
+  }).join('');
+}
+
+function addMsg(role,html,typing=false){
+  const c=document.getElementById('chat');
+  const w=document.createElement('div');w.className=`mw ${role==='ai'?'a':'u'}`;
+  const av=document.createElement('div');av.className='av';av.textContent=role==='ai'?'📐':'👤';
+  const b=document.createElement('div');b.className='bub';
+  if(typing){b.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';w.id='typ';}
+  else b.innerHTML=html;
+  w.appendChild(av);w.appendChild(b);c.appendChild(w);
+  c.scrollTop=c.scrollHeight;return w;
+}
+
+function setLvl(t){
+  const l=t.toLowerCase();
+  ['l1','l2','l3'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  if(l.includes('nível 3')||l.includes('avançado'))document.getElementById('l3').classList.add('on');
+  else if(l.includes('nível 2')||l.includes('em desenvolvimento'))document.getElementById('l2').classList.add('on');
+  else if(l.includes('nível 1')||l.includes('iniciante'))document.getElementById('l1').classList.add('on');
+}
+
+async function callAPI(msg){
+  hist.push({role:'user',content:msg});
+  const typ=addMsg('ai','',true);
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':KEY,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,system:SYS,messages:hist})
+    });
+    const d=await r.json();
+    typ.remove();
+    if(d.error){addMsg('ai',`<span class="err">Erro: ${d.error.message}</span>`);hist.pop();return;}
+    const txt=d.content?.map(b=>b.text||'').join('')||'Sem resposta.';
+    hist.push({role:'assistant',content:txt});
+    addMsg('ai',md(txt));
+    setLvl(txt);
+  }catch(e){
+    typ.remove();
+    addMsg('ai',`<span class="err">Erro: ${e.message}</span>`);
+    hist.pop();
+  }
+}
+
+async function send(ov){
+  if(busy)return;
+  const inp=document.getElementById('inp');
+  const txt=(ov||inp.value).trim();if(!txt)return;
+  if(!started){
+    document.getElementById('welcome').classList.add('gone');
+    document.getElementById('chips').style.display='flex';
+    started=true;
+  }
+  inp.value='';inp.style.height='auto';
+  addMsg('user',md(txt));
+  busy=true;document.getElementById('sbtn').disabled=true;
+  await callAPI(txt);
+  busy=false;document.getElementById('sbtn').disabled=false;
+  inp.focus();
+}
+
+function chip(t){send(t);}
+function go(t){send(`Quero estudar ${t}`);}
+
+function reset(){
+  hist=[];busy=false;started=false;
+  document.getElementById('chat').innerHTML='';
+  document.getElementById('welcome').classList.remove('gone');
+  document.getElementById('chips').style.display='none';
+  ['l1','l2','l3'].forEach(id=>document.getElementById(id).classList.remove('on'));
+}
+
+document.getElementById('inp').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
+});
+document.getElementById('inp').addEventListener('input',function(){
+  this.style.height='auto';
+  this.style.height=Math.min(this.scrollHeight,110)+'px';
+});
+</script>
+</body>
+</html>
