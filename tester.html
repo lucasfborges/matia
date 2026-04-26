@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MatIA — Testador Automático</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&family=DM+Mono&display=swap" rel="stylesheet"/>
+<style>
+[data-theme="dark"]{--bg:#0a0c10;--sur:#111520;--sur2:#181e2e;--bor:#1e2840;--acc:#4f8cff;--acc2:#a78bfa;--acc3:#34d399;--txt:#e8eaf0;--txt2:#8b93a8;--txt3:#4a5168;--glow:rgba(79,140,255,.15);--shadow:rgba(0,0,0,.5);--pass:#34d399;--fail:#f87171;--warn:#fbbf24}
+[data-theme="light"]{--bg:#f4f6fb;--sur:#fff;--sur2:#eef1f8;--bor:#d4d9e8;--acc:#2563eb;--acc2:#7c3aed;--acc3:#059669;--txt:#1a1d2e;--txt2:#4a5168;--txt3:#9ba3b8;--glow:rgba(37,99,235,.12);--shadow:rgba(0,0,0,.1);--pass:#059669;--fail:#dc2626;--warn:#d97706}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--bor);background:var(--sur);flex-shrink:0;position:sticky;top:0;z-index:50}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+.hright{display:flex;gap:8px;align-items:center}
+.hbtn{background:var(--sur2);border:1px solid var(--bor);color:var(--txt2);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.hbtn:hover{border-color:var(--acc);color:var(--acc)}
+.hbtn.run{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:none;font-weight:500}
+.hbtn.run:hover{opacity:.9}
+.hbtn:disabled{opacity:.4;cursor:not-allowed}
+.theme-btn{width:32px;height:32px;border-radius:8px;background:var(--sur2);border:1px solid var(--bor);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+
+#keybar{background:var(--sur2);border-bottom:1px solid var(--bor);padding:10px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#keybar label{font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace;white-space:nowrap}
+#keyinp{flex:1;max-width:340px;background:var(--sur);border:1px solid var(--bor);border-radius:8px;padding:7px 12px;color:var(--txt);font-family:'DM Mono',monospace;font-size:12px;outline:none;transition:border-color .2s}
+#keyinp:focus{border-color:var(--acc)}#keyinp::placeholder{color:var(--txt3)}
+.key-note{font-size:11px}
+
+.main{display:grid;grid-template-columns:320px 1fr;gap:0;flex:1;overflow:hidden;height:calc(100vh - 107px)}
+.panel{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--bor)}
+.panel-hdr{padding:12px 16px;border-bottom:1px solid var(--bor);background:var(--sur2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.panel-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--txt)}
+.panel-sub{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;margin-top:2px}
+#sclist{overflow-y:auto;flex:1;padding:10px}
+#sclist::-webkit-scrollbar{width:3px}
+#sclist::-webkit-scrollbar-thumb{background:var(--bor);border-radius:3px}
+
+.sc{border:1px solid var(--bor);border-radius:10px;margin-bottom:9px;overflow:hidden;cursor:pointer;transition:all .2s}
+.sc:hover{border-color:var(--acc2)}
+.sc.active{border-color:var(--acc);box-shadow:0 0 12px var(--glow)}
+.sc-head{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--sur)}
+.sc-emoji{font-size:18px;flex-shrink:0}
+.sc-info{flex:1;min-width:0}
+.sc-name{font-weight:500;font-size:13px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-desc{font-size:11px;color:var(--txt2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-badge{font-size:10px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:20px;border:1px solid var(--bor);color:var(--txt3);flex-shrink:0}
+.sc-badge.pass{border-color:var(--pass);color:var(--pass);background:rgba(52,211,153,.08)}
+.sc-badge.fail{border-color:var(--fail);color:var(--fail);background:rgba(248,113,113,.08)}
+.sc-badge.running{border-color:var(--warn);color:var(--warn);background:rgba(251,191,36,.08)}
+
+.results-panel{display:flex;flex-direction:column;overflow:hidden}
+.results-hdr{padding:12px 16px;border-bottom:1px solid var(--bor);background:var(--sur2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#results{overflow-y:auto;flex:1;padding:14px}
+#results::-webkit-scrollbar{width:3px}
+#results::-webkit-scrollbar-thumb{background:var(--bor);border-radius:3px}
+
+.conv-wrap{margin-bottom:14px}
+.turn{display:flex;gap:8px;margin-bottom:7px;animation:fs .25s ease}
+@keyframes fs{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.turn.student{flex-direction:row-reverse}
+.turn-av{width:26px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:1px}
+.turn.matia .turn-av{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+.turn.student .turn-av{background:var(--sur2);border:1px solid var(--bor);color:var(--txt2)}
+.turn-bub{max-width:88%;padding:8px 12px;border-radius:11px;font-size:13px;line-height:1.6}
+.turn.matia .turn-bub{background:var(--sur);border:1px solid var(--bor);border-top-left-radius:3px;color:var(--txt)}
+.turn.student .turn-bub{background:var(--sur2);border:1px solid rgba(79,140,255,.25);border-top-right-radius:3px;color:var(--txt)}
+
+.eval-card{border:1px solid var(--bor);border-radius:10px;padding:13px 15px;background:var(--sur)}
+.eval-title{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.crit-item{border:1px solid var(--bor);border-radius:8px;padding:9px 12px;margin-bottom:7px;background:var(--sur2)}
+.crit-item.pass{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.04)}
+.crit-item.fail{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.04)}
+.crit-header{display:flex;align-items:flex-start;gap:8px}
+.crit-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.crit-text{font-size:12.5px;color:var(--txt);flex:1;line-height:1.5}
+.crit-reason{font-size:11.5px;color:var(--txt2);margin-top:5px;padding-top:5px;border-top:1px solid var(--bor);font-style:italic;line-height:1.5}
+
+.eval-summary{margin-top:10px;padding:9px 13px;border-radius:8px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+.eval-summary.pass{background:rgba(52,211,153,.08);border:1px solid var(--pass);color:var(--pass)}
+.eval-summary.fail{background:rgba(248,113,113,.08);border:1px solid var(--fail);color:var(--fail)}
+.eval-summary.warn{background:rgba(251,191,36,.08);border:1px solid var(--warn);color:var(--warn)}
+
+#scorebar{padding:12px 24px;border-top:1px solid var(--bor);background:var(--sur2);display:flex;align-items:center;gap:14px;flex-shrink:0}
+.score-label{font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace;white-space:nowrap}
+.score-val{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;white-space:nowrap}
+.score-val.good{color:var(--pass)}.score-val.mid{color:var(--warn)}.score-val.bad{color:var(--fail)}
+.progress-bar{flex:1;height:6px;background:var(--sur);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .6s ease;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+
+.typing{display:flex;gap:4px;padding:2px}
+.typing span{width:5px;height:5px;border-radius:50%;background:var(--acc);animation:bk 1.2s ease infinite;opacity:.3}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bk{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:80%;color:var(--txt3);text-align:center;padding:40px}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.empty-text{font-size:13px;line-height:1.6}
+.judge-notice{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace;margin-top:6px;display:flex;align-items:center;gap:5px}
+
+@media(max-width:700px){.main{grid-template-columns:1fr;grid-template-rows:260px 1fr}.panel{border-right:none;border-bottom:1px solid var(--bor)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🧪</div>
+    <div><div class="logo-name">MatIA Tester</div><div class="logo-sub">Avaliador Automático · LLM Judge</div></div>
+  </div>
+  <div class="hright">
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <button class="hbtn" id="runAllBtn" onclick="runAll()">▶ Executar Todos</button>
+    <button class="hbtn" onclick="resetAll()">↺ Limpar</button>
+  </div>
+</header>
+
+<div id="keybar">
+  <label>🔑 Chave API:</label>
+  <input type="password" id="keyinp" placeholder="sk-ant-..." autocomplete="off"/>
+  <button class="hbtn" onclick="saveKey()">Salvar</button>
+  <span class="key-note" id="key-status" style="color:var(--txt3)">Nenhuma chave salva</span>
+  <span class="judge-notice">🤖 Avaliação por IA — mais precisa que regex</span>
+</div>
+
+<div class="main">
+  <div class="panel">
+    <div class="panel-hdr">
+      <div><div class="panel-title">📋 Cenários de Teste</div><div class="panel-sub">Clique · ▶ para executar todos</div></div>
+    </div>
+    <div id="sclist"></div>
+  </div>
+
+  <div class="results-panel">
+    <div class="results-hdr">
+      <div><div class="panel-title" id="res-title">📊 Resultado</div><div class="panel-sub" id="res-sub">Selecione um cenário ou execute todos</div></div>
+      <button class="hbtn run" id="runOneBtn" style="display:none" onclick="runSelected()">▶ Executar</button>
+    </div>
+    <div id="results">
+      <div class="empty"><div class="empty-icon">🔬</div><div class="empty-text">Execute os testes para ver<br>a análise pedagógica do MatIA</div></div>
+    </div>
+    <div id="scorebar" style="display:none">
+      <span class="score-label">APROVAÇÃO GERAL</span>
+      <span class="score-val" id="scoreVal">-</span>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <span class="score-label" id="scoreDetail">0/0 cenários</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ THEME ══════════════════════════════════════════════ */
+function initTheme(){applyTheme(localStorage.getItem('tester_theme')||'dark')}
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙';localStorage.setItem('tester_theme',t)}
+function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')}
+initTheme();
+
+/* ══ API KEY ═════════════════════════════════════════════ */
+let KEY='';
+function initKey(){
+  const k=localStorage.getItem('matia_key');
+  if(k){KEY=k;document.getElementById('keyinp').value=k;setKeyStatus('✅ Chave carregada','var(--pass)')}
+}
+function saveKey(){
+  const v=document.getElementById('keyinp').value.trim();
+  if(!v.startsWith('sk-')){setKeyStatus('❌ Inválida (deve começar com sk-)','var(--fail)');return}
+  KEY=v;localStorage.setItem('matia_key',v);setKeyStatus('✅ Chave salva','var(--pass)');
+}
+function setKeyStatus(msg,color){const el=document.getElementById('key-status');el.textContent=msg;el.style.color=color}
+initKey();
+
+/* ══ MATIA SYSTEM PROMPT ════════════════════════════════ */
+const MATIA_SYS=`Você é MatIA, tutor de Geometria Espacial para o Ensino Médio. Seu estilo é descontraído e empolgante.
+
+REGRA ABSOLUTA — PEDAGOGIA INVISÍVEL:
+NUNCA mencione: "Etapa 1/2/3/4", "Nível 1/2/3", "diagnóstico", "Pólya", "Vygotsky", "Bloom", "ZDP", "você é iniciante/avançado", "próxima etapa", "classificação".
+
+AO COMEÇAR: abra com curiosidade histórica ou conexão surpreendente com o mundo real. Depois pergunte naturalmente para entender o que o aluno já sabe — sem anunciar que é diagnóstico.
+
+QUANDO O ALUNO ACERTA: celebre SEMPRE antes de avançar. Use: "Isso!", "Perfeito!", "Exatamente!", "Acertou em cheio!", "Show!", "Mandou bem!", "Era exatamente isso!"
+
+QUANDO O ALUNO ERRA: NUNCA corrija diretamente.
+- 1ª vez: redirecione com curiosidade ("Hmm, relê o que o problema pediu...")
+- 2ª vez: dê a fórmula como lembrete casual ("Deixa eu te dar um lembrete rápido: [fórmula]")
+- 3ª vez: exemplo menor análogo
+- Após 3 tentativas: explique passo a passo, naturalmente.
+Sempre reconheça a tentativa antes de corrigir.
+
+ALUNO COM PRESSA: NUNCA entregue o resultado numérico final, mesmo sob insistência. Seja simpático mas firme: "Haha entendo! Mas juro que é rapidinho — me responde só isso: [pergunta simples]. Você consegue!"
+
+ALUNO AVANÇADO: se já demonstrou domínio, avance direto para algo mais desafiador. NÃO repita o básico.
+
+RESOLUÇÃO (sem nomear etapas):
+→ "O que a questão quer descobrir?" → "Que fórmula se encaixa?" → "Tenta substituir!" → "Faz sentido no mundo real?"
+
+APÓS RESOLVER: conecte ao ENEM, cite a pegadinha, ofereça desafio opcional.
+
+FORMATAÇÃO: máximo 4 parágrafos, UMA pergunta por vez, linguagem jovem, emojis moderados.`;
+
+/* ══ EVALUATOR SYSTEM PROMPT ════════════════════════════ */
+const EVAL_SYS=`Você é um avaliador pedagógico especialista em tutoria de matemática.
+Sua tarefa é analisar transcrições de conversas entre um tutor de IA (MatIA) e um aluno simulado, avaliando critérios pedagógicos específicos.
+
+Seja criterioso mas justo. Considere o contexto completo da conversa, não apenas frases isoladas.
+Responda SOMENTE com JSON válido, sem texto antes ou depois, sem blocos de código markdown.
+Formato exato: {"criteria":[{"id":"c1","pass":true,"reason":"explicação em português"},...]}`;
+
+/* ══ SCENARIOS ═══════════════════════════════════════════ */
+const SCENARIOS=[
+  {
+    id:'s1',emoji:'🥤',
+    name:'Abertura Natural — Cilindro',
+    desc:'Verifica se o MatIA abre com curiosidade e diagnostica sem anunciar',
+    conversation:[
+      {role:'student',text:'Quero estudar cilindro'},
+      {role:'student',text:'Cilindro tem duas tampas redondas e um corpo'},
+      {role:'student',text:'Não sei calcular o volume não'},
+    ],
+    criteria:[
+      {id:'c1',text:'O MatIA NÃO mencionou palavras proibidas como "etapa", "nível", "diagnóstico", "Pólya", "você é iniciante" ou equivalentes em nenhum momento'},
+      {id:'c2',text:'O MatIA abriu com uma curiosidade histórica ou conexão com o mundo real (não começou diretamente com teoria ou fórmula)'},
+      {id:'c3',text:'O MatIA fez no máximo 1-2 perguntas de cada vez, nunca sobrecarregou o aluno com várias perguntas numa mesma mensagem'},
+      {id:'c4',text:'O MatIA NÃO apresentou a fórmula de volume antes do aluno tentar responder perguntas exploratórias'},
+      {id:'c5',text:'A linguagem do MatIA foi jovem, empolgante e natural — como um amigo, não como um sistema formal'},
+    ]
+  },
+  {
+    id:'s2',emoji:'🔺',
+    name:'Dicas Progressivas — Pirâmide',
+    desc:'Aluno erra o volume: testa se as dicas são graduais e naturais',
+    conversation:[
+      {role:'student',text:'Quero calcular o volume de uma pirâmide de base quadrada de lado 6m e altura 4m'},
+      {role:'student',text:'O volume é 6 × 4 = 24 m³'},
+      {role:'student',text:'Ah, mas é 6² × 4 = 144 m³?'},
+    ],
+    criteria:[
+      {id:'c1',text:'Na primeira resposta ao erro, o MatIA NÃO corrigiu diretamente — fez alguma pergunta redirecionadora ou observação que leve o aluno a repensar'},
+      {id:'c2',text:'O MatIA reconheceu/celebrou a tentativa do aluno antes de indicar que havia um erro (ex: "quase!", "boa tentativa", "você pegou a ideia", "interessante")'},
+      {id:'c3',text:'O MatIA NÃO revelou imediatamente a fórmula completa V=(1/3)×Abase×h na primeira mensagem de correção'},
+      {id:'c4',text:'Em nenhuma mensagem o MatIA usou jargão pedagógico como "etapa", "nível", "diagnóstico" ou metodologias citadas explicitamente'},
+    ]
+  },
+  {
+    id:'s3',emoji:'🔮',
+    name:'Aluno Avançado — Esfera',
+    desc:'Aluno demonstra domínio: MatIA deve avançar sem repetir o básico',
+    conversation:[
+      {role:'student',text:'Quero estudar esfera'},
+      {role:'student',text:'Esfera tem raio, diâmetro, centro, meridianos, paralelos e equador. Área = 4πr² e Volume = (4/3)πr³'},
+      {role:'student',text:'Quero algo mais desafiador, já sei o básico'},
+    ],
+    criteria:[
+      {id:'c1',text:'O MatIA reconheceu o domínio do aluno de forma elogiosa e natural, SEM usar termos como "você é avançado", "nível 3" ou "diagnóstico concluído"'},
+      {id:'c2',text:'O MatIA propôs algo mais desafiador — uma análise mais profunda, problema complexo, comparação entre sólidos ou questão ENEM — sem repetir conceitos básicos'},
+      {id:'c3',text:'O MatIA NÃO repetiu as fórmulas (Área=4πr², Volume=(4/3)πr³) que o aluno já havia demonstrado conhecer'},
+      {id:'c4',text:'A resposta final do MatIA foi motivadora e avançou o conteúdo de forma natural'},
+    ]
+  },
+  {
+    id:'s4',emoji:'🎯',
+    name:'Conexão com ENEM — Cone',
+    desc:'Após dominar o tema, verifica a conexão com o ENEM',
+    conversation:[
+      {role:'student',text:'Quero aprender cone'},
+      {role:'student',text:'Cone tem base circular, vértice e geratriz. A geratriz é a linha do vértice até a borda da base'},
+      {role:'student',text:'g² = r² + h², é tipo Pitágoras! Entendi.'},
+      {role:'student',text:'Isso cai no ENEM?'},
+    ],
+    criteria:[
+      {id:'c1',text:'O MatIA mencionou o ENEM de forma animada e direta ao ser perguntado'},
+      {id:'c2',text:'O MatIA citou uma pegadinha específica e comum nas questões de ENEM sobre cone (ex: confundir geratriz com altura, unidades, etc.)'},
+      {id:'c3',text:'O MatIA ofereceu a possibilidade de fazer um Desafio ENEM — de forma convidativa, sem obrigar'},
+      {id:'c4',text:'O MatIA celebrou o entendimento do aluno sobre a relação de Pitágoras com a geratriz antes de falar sobre ENEM'},
+    ]
+  },
+  {
+    id:'s5',emoji:'🚫',
+    name:'Resistência à Pressão',
+    desc:'Aluno exige resposta direta: MatIA deve resistir sem ser rude',
+    conversation:[
+      {role:'student',text:'Quanto é o volume de um cilindro com raio 3 e altura 5? Me fala logo a resposta'},
+      {role:'student',text:'Não precisa me ensinar nada, só me dá o número'},
+      {role:'student',text:'Vai logo, tô com pressa'},
+    ],
+    criteria:[
+      {id:'c1',text:'O MatIA NUNCA entregou o resultado numérico final calculado (ex: 141,3 ou 45π ou 141,37) em nenhuma das respostas'},
+      {id:'c2',text:'O MatIA manteve um tom simpático e amigável, sem ser rígido, frio ou usar frases como "não posso fazer isso" ou "minhas regras impedem"'},
+      {id:'c3',text:'O MatIA tentou engajar o aluno com uma estratégia criativa — como prometer que será rápido, fazer uma pergunta muito simples, ou propor um atalho que ainda envolva o aluno'},
+    ]
+  },
+  {
+    id:'s6',emoji:'📦',
+    name:'Visualização Mental — Prisma',
+    desc:'Verifica se o MatIA ativa a imaginação antes de fórmulas',
+    conversation:[
+      {role:'student',text:'Quero aprender sobre prisma e paralelepípedo'},
+      {role:'student',text:'Acho que é tipo uma caixa, né?'},
+    ],
+    criteria:[
+      {id:'c1',text:'O MatIA usou uma analogia com objeto do cotidiano para ativar a visualização mental (caixa de sapato, tijolo, container, etc.)'},
+      {id:'c2',text:'O MatIA fez perguntas que estimulam o aluno a "visualizar" o sólido mentalmente, antes de apresentar qualquer fórmula'},
+      {id:'c3',text:'O MatIA NÃO apresentou fórmulas de área ou volume logo na primeira ou segunda resposta sem antes explorar a visualização'},
+      {id:'c4',text:'A conversa teve tom empolgante e conectou o prisma ao mundo real de alguma forma'},
+    ]
+  }
+];
+
+/* ══ STATE ═══════════════════════════════════════════════ */
+let results={},selectedId=null,running=false;
+
+/* ══ API CALL ════════════════════════════════════════════ */
+async function apiCall(systemPrompt,messages,maxTokens=700){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:maxTokens,system:systemPrompt,messages})
+  });
+  const d=await r.json();
+  if(d.error)throw new Error(d.error.message);
+  return d.content?.map(b=>b.text||'').join('')||'';
+}
+
+/* ══ EVALUATE WITH LLM JUDGE ══════════════════════════ */
+async function evaluateWithLLM(sc,turns){
+  const transcript=turns.map(t=>`${t.role==='matia'?'MATIA (tutor)':'ALUNO'}: ${t.text}`).join('\n\n');
+  const criteriaStr=sc.criteria.map(c=>`${c.id}: ${c.text}`).join('\n');
+
+  const prompt=`Analise esta transcrição de conversa do tutor MatIA com um aluno simulado e avalie cada critério.
+
+TRANSCRIÇÃO COMPLETA:
+${transcript}
+
+CRITÉRIOS PARA AVALIAR:
+${criteriaStr}
+
+Avalie cada critério considerando TODA a conversa, não apenas uma frase isolada.
+Seja justo: se o critério foi atendido de forma razoável mesmo que não perfeita, marque como aprovado.
+Responda APENAS com JSON válido:
+{"criteria":[{"id":"c1","pass":true,"reason":"explicação curta em português do porquê passou ou falhou"},{"id":"c2",...}]}`;
+
+  const raw=await apiCall(EVAL_SYS,[{role:'user',content:prompt}],900);
+
+  // Clean and parse JSON
+  const cleaned=raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+  try{
+    return JSON.parse(cleaned);
+  }catch(e){
+    // Try to extract JSON
+    const match=cleaned.match(/\{[\s\S]*\}/);
+    if(match)return JSON.parse(match[0]);
+    throw new Error('Resposta do avaliador não é JSON válido: '+cleaned.slice(0,100));
+  }
+}
+
+/* ══ RUN SCENARIO ════════════════════════════════════════ */
+async function runScenario(sc){
+  if(!KEY){alert('Insira a chave de API primeiro!');return null}
+  results[sc.id]='running';renderList();
+  if(selectedId===sc.id)showLoading('Simulando conversa com o MatIA...');
+
+  const hist=[];
+  const turns=[];
+
+  try{
+    // Simulate conversation
+    for(const turn of sc.conversation){
+      hist.push({role:'user',content:turn.text});
+      turns.push({role:'student',text:turn.text});
+      if(selectedId===sc.id)showLoading(`Turno ${turns.length} — aguardando MatIA...`);
+      const resp=await apiCall(MATIA_SYS,[...hist]);
+      hist.push({role:'assistant',content:resp});
+      turns.push({role:'matia',text:resp});
+    }
+
+    // Evaluate with LLM judge
+    if(selectedId===sc.id)showLoading('🤖 Avaliador analisando a conversa...');
+    const evaluation=await evaluateWithLLM(sc,turns);
+
+    // Merge with criterion texts
+    const evalResults=sc.criteria.map(c=>{
+      const ev=evaluation.criteria?.find(e=>e.id===c.id)||{pass:false,reason:'Critério não avaliado'};
+      return{...c,ok:ev.pass,reason:ev.reason};
+    });
+    const passed=evalResults.every(e=>e.ok);
+    const result={turns,evalResults,passed};
+    results[sc.id]=result;
+    return result;
+
+  }catch(e){
+    const result={turns,evalResults:[],passed:false,error:e.message};
+    results[sc.id]=result;
+    return result;
+  }
+}
+
+/* ══ SHOW LOADING ════════════════════════════════════════ */
+function showLoading(msg){
+  document.getElementById('results').innerHTML=`
+    <div class="empty">
+      <div style="font-size:28px;margin-bottom:12px"><div class="typing" style="justify-content:center"><span></span><span></span><span></span></div></div>
+      <div class="empty-text">${msg}</div>
+    </div>`;
+}
+
+/* ══ RENDER LIST ═════════════════════════════════════════ */
+function renderList(){
+  document.getElementById('sclist').innerHTML=SCENARIOS.map(s=>{
+    const r=results[s.id];
+    let badge='';
+    if(r==='running')badge='<span class="sc-badge running">...</span>';
+    else if(r&&r.passed!==undefined)badge=`<span class="sc-badge ${r.passed?'pass':'fail'}">${r.passed?'✅ OK':'❌ Falhou'}</span>`;
+    return`<div class="sc${selectedId===s.id?' active':''}" onclick="selectScenario('${s.id}')">
+      <div class="sc-head">
+        <div class="sc-emoji">${s.emoji}</div>
+        <div class="sc-info"><div class="sc-name">${s.name}</div><div class="sc-desc">${s.desc}</div></div>
+        ${badge}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══ SELECT SCENARIO ═════════════════════════════════════ */
+function selectScenario(id){
+  selectedId=id;
+  renderList();
+  const sc=SCENARIOS.find(s=>s.id===id);
+  document.getElementById('res-title').textContent=`${sc.emoji} ${sc.name}`;
+  document.getElementById('res-sub').textContent=sc.desc;
+  document.getElementById('runOneBtn').style.display='block';
+  const r=results[id];
+  if(r&&r!=='running')renderResult(id,r);
+  else document.getElementById('results').innerHTML=`<div class="empty"><div class="empty-icon">${sc.emoji}</div><div class="empty-text">${r==='running'?'Executando...':'Clique em ▶ Executar para rodar este cenário'}</div></div>`;
+}
+
+/* ══ RENDER RESULT ═══════════════════════════════════════ */
+function renderResult(id,r){
+  const el=document.getElementById('results');
+  if(r.error){el.innerHTML=`<div class="eval-card"><div class="eval-summary fail">❌ Erro: ${r.error}</div></div>`;return}
+
+  let html='<div class="conv-wrap">';
+  r.turns.forEach(t=>{
+    const isM=t.role==='matia';
+    const safe=t.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    html+=`<div class="turn ${isM?'matia':'student'}"><div class="turn-av">${isM?'📐':'👤'}</div><div class="turn-bub">${safe}</div></div>`;
+  });
+  html+='</div>';
+
+  if(r.evalResults?.length){
+    const passCount=r.evalResults.filter(e=>e.ok).length;
+    const total=r.evalResults.length;
+    const allPass=passCount===total;
+    const partial=passCount>=total*.6;
+    html+=`<div class="eval-card"><div class="eval-title">🤖 Avaliação por IA — Análise Pedagógica</div>`;
+    r.evalResults.forEach(e=>{
+      html+=`<div class="crit-item ${e.ok?'pass':'fail'}">
+        <div class="crit-header"><span class="crit-icon">${e.ok?'✅':'❌'}</span><span class="crit-text">${e.text}</span></div>
+        <div class="crit-reason">💬 ${e.reason||'Sem justificativa'}</div>
+      </div>`;
+    });
+    html+=`<div class="eval-summary ${allPass?'pass':partial?'warn':'fail'}">
+      ${allPass?'✅ Cenário aprovado!':partial?`⚠️ Parcialmente aprovado — ${passCount}/${total} critérios`:`❌ Reprovado — ${passCount}/${total} critérios`}
+    </div></div>`;
+  }
+  el.innerHTML=html;
+}
+
+/* ══ RUN SELECTED ════════════════════════════════════════ */
+async function runSelected(){
+  if(running||!selectedId)return;
+  running=true;toggleBtns(true);
+  const r=await runScenario(SCENARIOS.find(s=>s.id===selectedId));
+  renderList();if(r)renderResult(selectedId,r);updateScore();
+  running=false;toggleBtns(false);
+}
+
+/* ══ RUN ALL ═════════════════════════════════════════════ */
+async function runAll(){
+  if(running)return;
+  if(!KEY){alert('Insira a chave de API primeiro!');return}
+  running=true;toggleBtns(true);
+  for(const sc of SCENARIOS){
+    selectedId=sc.id;renderList();
+    document.getElementById('res-title').textContent=`${sc.emoji} ${sc.name}`;
+    document.getElementById('res-sub').textContent=sc.desc;
+    document.getElementById('runOneBtn').style.display='block';
+    const r=await runScenario(sc);
+    renderList();if(r)renderResult(sc.id,r);updateScore();
+    await new Promise(res=>setTimeout(res,600));
+  }
+  running=false;toggleBtns(false);
+}
+
+/* ══ SCORE ═══════════════════════════════════════════════ */
+function updateScore(){
+  const done=Object.entries(results).filter(([,v])=>v&&v!=='running'&&v.passed!==undefined);
+  if(!done.length)return;
+  const passed=done.filter(([,v])=>v.passed).length;
+  const pct=Math.round((passed/done.length)*100);
+  document.getElementById('scorebar').style.display='flex';
+  const sv=document.getElementById('scoreVal');
+  sv.textContent=pct+'%';sv.className='score-val '+(pct>=80?'good':pct>=50?'mid':'bad');
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('scoreDetail').textContent=`${passed}/${done.length} aprovados`;
+}
+
+/* ══ UTILS ═══════════════════════════════════════════════ */
+function toggleBtns(dis){
+  document.getElementById('runAllBtn').disabled=dis;
+  document.getElementById('runOneBtn').disabled=dis;
+}
+function resetAll(){
+  results={};selectedId=null;running=false;
+  document.getElementById('scorebar').style.display='none';
+  document.getElementById('res-title').textContent='📊 Resultado';
+  document.getElementById('res-sub').textContent='Selecione um cenário ou execute todos';
+  document.getElementById('runOneBtn').style.display='none';
+  document.getElementById('results').innerHTML=`<div class="empty"><div class="empty-icon">🔬</div><div class="empty-text">Execute os testes para ver<br>a análise pedagógica do MatIA</div></div>`;
+  renderList();
+}
+
+renderList();
+</script>
+</body>
+</html>
