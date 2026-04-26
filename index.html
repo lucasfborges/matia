@@ -1,24 +1,35 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>MatIA — Geometria Espacial</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet"/>
 <style>
-:root{
+/* ══ TOKENS ══════════════════════════════════════════════ */
+[data-theme="dark"]{
   --bg:#0a0c10;--sur:#111520;--sur2:#181e2e;--bor:#1e2840;
   --acc:#4f8cff;--acc2:#a78bfa;--acc3:#34d399;
   --txt:#e8eaf0;--txt2:#8b93a8;--txt3:#4a5168;
   --ub:#1a2340;--ab:#111826;--glow:rgba(79,140,255,.18);
+  --shadow:rgba(0,0,0,.5);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:15px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+[data-theme="light"]{
+  --bg:#f4f6fb;--sur:#ffffff;--sur2:#eef1f8;--bor:#d4d9e8;
+  --acc:#2563eb;--acc2:#7c3aed;--acc3:#059669;
+  --txt:#1a1d2e;--txt2:#4a5168;--txt3:#9ba3b8;
+  --ub:#dbeafe;--ab:#f8f9fc;--glow:rgba(37,99,235,.15);
+  --shadow:rgba(0,0,0,.12);
+}
 
-/* ── API KEY MODAL ── */
-#modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px}
+/* ══ RESET ═══════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:15px;height:100vh;display:flex;flex-direction:column;overflow:hidden;transition:background .3s,color .3s}
+
+/* ══ API KEY MODAL ═══════════════════════════════════════ */
+#modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px}
 #modal.hidden{display:none}
-.mbox{background:var(--sur);border:1px solid var(--bor);border-radius:18px;padding:34px 30px;max-width:420px;width:100%;box-shadow:0 30px 70px rgba(0,0,0,.5);animation:fadeUp .3s ease}
+.mbox{background:var(--sur);border:1px solid var(--bor);border-radius:18px;padding:34px 30px;max-width:420px;width:100%;box-shadow:0 30px 70px var(--shadow);animation:fadeUp .3s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .mico{font-size:38px;margin-bottom:12px}
 .mtit{font-family:'Syne',sans-serif;font-weight:800;font-size:21px;margin-bottom:8px;color:var(--txt)}
@@ -29,32 +40,28 @@ body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font
 #keyinp{flex:1;background:var(--sur2);border:1px solid var(--bor);border-radius:10px;padding:10px 13px;color:var(--txt);font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
 #keyinp:focus{border-color:var(--acc)}
 #keyinp::placeholder{color:var(--txt3)}
-.mbtn{background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;border-radius:10px;padding:10px 18px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s;white-space:nowrap}
-.mbtn:hover{transform:scale(1.04);box-shadow:0 0 16px var(--glow)}
+.mbtn{background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;border-radius:10px;padding:10px 18px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap}
+.mbtn:hover{opacity:.9}
 .mnote{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace}
 .mnote::before{content:'🔒  '}
-.merr{color:#f87171;font-size:12px;margin-top:7px;display:none}
+.merr{color:#ef4444;font-size:12px;margin-top:7px;display:none}
 
-/* ── HEADER ── */
-header{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;border-bottom:1px solid var(--bor);background:rgba(10,12,16,.94);backdrop-filter:blur(12px);flex-shrink:0;z-index:10;position:relative}
+/* ══ HEADER ══════════════════════════════════════════════ */
+header{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;border-bottom:1px solid var(--bor);background:var(--sur);flex-shrink:0;z-index:10;position:relative;transition:background .3s,border-color .3s}
 .logo{display:flex;align-items:center;gap:10px}
 .logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 16px var(--glow)}
 .logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
 .logo-sub{font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
-.hright{display:flex;align-items:center;gap:8px}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--acc3);box-shadow:0 0 7px var(--acc3);animation:pulse 2s infinite}
+.hright{display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--acc3);box-shadow:0 0 7px var(--acc3);animation:pulse 2s infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .dot-lbl{font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace}
 .hbtn{background:var(--sur2);border:1px solid var(--bor);color:var(--txt2);padding:5px 11px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
 .hbtn:hover{border-color:var(--acc);color:var(--acc)}
+.theme-btn{width:34px;height:34px;border-radius:9px;background:var(--sur2);border:1px solid var(--bor);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .2s}
+.theme-btn:hover{border-color:var(--acc)}
 
-/* ── LEVEL BAR ── */
-.lvl-bar{display:flex;align-items:center;justify-content:center;gap:7px;padding:7px 22px;background:var(--sur);border-bottom:1px solid var(--bor);flex-shrink:0}
-.lvl{font-size:11px;font-family:'DM Mono',monospace;padding:3px 10px;border-radius:20px;border:1px solid var(--bor);color:var(--txt3);transition:all .3s}
-.lvl.on{border-color:var(--acc);color:var(--acc);background:rgba(79,140,255,.1);box-shadow:0 0 9px rgba(79,140,255,.2)}
-.lvl-sep{color:var(--txt3);font-size:11px}
-
-/* ── CHAT ── */
+/* ══ CHAT ════════════════════════════════════════════════ */
 .chat-wrap{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
 #chat{flex:1;overflow-y:auto;padding:20px 0;scroll-behavior:smooth}
 #chat::-webkit-scrollbar{width:3px}
@@ -66,26 +73,29 @@ header{display:flex;align-items:center;justify-content:space-between;padding:13p
 .av{width:30px;height:30px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:2px}
 .mw.a .av{background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 0 10px var(--glow);margin-right:9px}
 .mw.u .av{background:var(--sur2);border:1px solid var(--bor);margin-left:9px;order:2}
-.bub{max-width:min(520px,80vw);padding:11px 15px;border-radius:13px;line-height:1.65;font-size:14.5px}
+.bub{max-width:min(520px,80vw);padding:11px 15px;border-radius:13px;line-height:1.65;font-size:14.5px;transition:background .3s,border-color .3s}
 .mw.a .bub{background:var(--ab);border:1px solid var(--bor);border-top-left-radius:3px;color:var(--txt)}
-.mw.u .bub{background:var(--ub);border:1px solid rgba(79,140,255,.3);border-top-right-radius:3px;color:var(--txt)}
+.mw.u .bub{background:var(--ub);border:1px solid rgba(79,140,255,.35);border-top-right-radius:3px;color:var(--txt)}
 .bub strong{color:var(--acc);font-weight:600}
 .bub em{color:var(--acc2);font-style:italic}
-.bub .fm{font-family:'DM Mono',monospace;font-size:13px;background:rgba(79,140,255,.08);border-left:2px solid var(--acc);padding:7px 11px;margin:7px 0;border-radius:0 7px 7px 0;color:#c8d8ff}
-.bub .en{background:rgba(79,140,255,.08);border:1px solid rgba(79,140,255,.25);border-radius:9px;padding:9px 12px;margin:7px 0}
+.bub .fm{font-family:'DM Mono',monospace;font-size:13px;background:var(--sur2);border-left:2px solid var(--acc);padding:7px 11px;margin:7px 0;border-radius:0 7px 7px 0;color:var(--acc)}
+.bub .en{background:var(--ub);border:1px solid var(--bor);border-radius:9px;padding:9px 12px;margin:7px 0}
 .bub .en-t{font-size:11px;font-weight:700;font-family:'Syne',sans-serif;color:var(--acc);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
 .bub blockquote{border-left:2px solid var(--acc2);padding-left:10px;margin:5px 0;color:var(--txt2);font-style:italic}
 .bub ul{padding-left:16px;margin:3px 0}
 .bub li{margin:2px 0}
 .bub p{margin:3px 0}
-.bub .err{color:#f87171;font-size:12px;font-family:'DM Mono',monospace}
+.bub .err{color:#ef4444;font-size:12px;font-family:'DM Mono',monospace}
+.bub .msg-img{max-width:100%;border-radius:8px;margin:6px 0;border:1px solid var(--bor);display:block}
+
+/* Typing */
 .typing{display:flex;align-items:center;gap:4px;padding:3px 2px}
 .typing span{width:5px;height:5px;border-radius:50%;background:var(--acc);opacity:.3;animation:bk 1.2s ease infinite}
 .typing span:nth-child(2){animation-delay:.2s}
 .typing span:nth-child(3){animation-delay:.4s}
 @keyframes bk{0%,80%,100%{opacity:.2}40%{opacity:1}}
 
-/* ── WELCOME ── */
+/* ══ WELCOME ══════════════════════════════════════════════ */
 #welcome{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 22px;text-align:center;transition:opacity .45s;pointer-events:none;background:var(--bg);z-index:20}
 #welcome.gone{opacity:0;pointer-events:none}
 .wi{font-size:50px;margin-bottom:14px;animation:float 3s ease-in-out infinite}
@@ -94,46 +104,56 @@ header{display:flex;align-items:center;justify-content:space-between;padding:13p
 .wt span{background:linear-gradient(90deg,var(--acc),var(--acc2),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .ws{color:var(--txt2);max-width:380px;line-height:1.6;margin-bottom:28px;font-size:14px}
 .wg{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;pointer-events:all;max-width:480px}
-.wc{background:var(--sur2);border:1px solid var(--bor);color:var(--txt);padding:9px 16px;border-radius:11px;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif}
-.wc:hover{border-color:var(--acc2);background:rgba(167,139,250,.1);transform:translateY(-2px);box-shadow:0 5px 18px rgba(0,0,0,.3)}
+.wc{background:var(--sur);border:1px solid var(--bor);color:var(--txt);padding:9px 16px;border-radius:11px;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px var(--shadow)}
+.wc:hover{border-color:var(--acc2);background:var(--sur2);transform:translateY(-2px);box-shadow:0 5px 18px var(--shadow)}
 
-/* ── CHIPS ── */
+/* ══ CHIPS ════════════════════════════════════════════════ */
 #chips{display:none;gap:7px;overflow-x:auto;padding:9px 22px 5px;flex-shrink:0;scrollbar-width:none;max-width:740px;margin:0 auto;width:100%}
 #chips::-webkit-scrollbar{display:none}
 .chip{flex-shrink:0;background:var(--sur2);border:1px solid var(--bor);color:var(--txt2);padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:'DM Sans',sans-serif}
-.chip:hover{border-color:var(--acc2);color:var(--acc2);background:rgba(167,139,250,.08)}
+.chip:hover{border-color:var(--acc2);color:var(--acc2)}
 
-/* ── INPUT ── */
-.inp-area{padding:12px 22px 16px;border-top:1px solid var(--bor);background:rgba(10,12,16,.96);backdrop-filter:blur(12px);flex-shrink:0;max-width:740px;margin:0 auto;width:100%;position:relative;z-index:10}
-.irow{display:flex;align-items:flex-end;gap:9px;background:var(--sur);border:1px solid var(--bor);border-radius:13px;padding:9px 9px 9px 15px;transition:border-color .2s}
+/* ══ IMAGE PREVIEW ════════════════════════════════════════ */
+#img-preview{display:none;align-items:center;gap:10px;padding:8px 22px;background:var(--sur2);border-top:1px solid var(--bor);flex-shrink:0;max-width:740px;margin:0 auto;width:100%}
+#img-preview img{height:52px;border-radius:7px;border:1px solid var(--bor);object-fit:cover}
+.img-name{font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.img-remove{background:none;border:none;color:var(--txt3);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:5px;transition:color .2s}
+.img-remove:hover{color:#ef4444}
+
+/* ══ INPUT ════════════════════════════════════════════════ */
+.inp-area{padding:10px 22px 14px;border-top:1px solid var(--bor);background:var(--sur);flex-shrink:0;max-width:740px;margin:0 auto;width:100%;position:relative;z-index:10;transition:background .3s}
+.irow{display:flex;align-items:flex-end;gap:8px;background:var(--sur2);border:1px solid var(--bor);border-radius:13px;padding:8px 8px 8px 14px;transition:border-color .2s,background .3s}
 .irow:focus-within{border-color:var(--acc);box-shadow:0 0 14px var(--glow)}
 #inp{flex:1;background:none;border:none;outline:none;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14.5px;resize:none;max-height:110px;line-height:1.5}
 #inp::placeholder{color:var(--txt3)}
+.img-btn{width:34px;height:34px;border-radius:9px;flex-shrink:0;background:var(--sur);border:1px solid var(--bor);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;color:var(--txt2);position:relative;overflow:hidden}
+.img-btn:hover{border-color:var(--acc2);color:var(--acc2)}
+.img-btn input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
 #sbtn{width:34px;height:34px;border-radius:9px;flex-shrink:0;background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;transition:all .2s;box-shadow:0 0 10px var(--glow)}
 #sbtn:hover{transform:scale(1.07)}
 #sbtn:disabled{opacity:.35;cursor:not-allowed;transform:none}
-.hint{font-size:10px;color:var(--txt3);text-align:center;margin-top:7px;font-family:'DM Mono',monospace}
+.hint{font-size:10px;color:var(--txt3);text-align:center;margin-top:6px;font-family:'DM Mono',monospace}
 
 @media(max-width:600px){
-  header{padding:11px 14px}
-  .lvl-bar{padding:6px 14px;gap:5px}
-  .inp-area{padding:9px 12px 13px}
+  header{padding:10px 14px}
+  .inp-area{padding:8px 12px 12px}
   #chips{padding:7px 12px 3px}
   .mw{padding:4px 12px}
   .bub{font-size:14px}
+  .dot-lbl{display:none}
 }
 </style>
 </head>
 <body>
 
-<!-- API Key Modal -->
+<!-- ── API KEY MODAL ─────────────────────────────────── -->
 <div id="modal">
   <div class="mbox">
     <div class="mico">🔑</div>
     <div class="mtit">Chave de Acesso</div>
     <p class="msub">
-      Para usar o MatIA, insira a chave de API da Anthropic.<br><br>
-      Não tem uma? Crie em <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>
+      Para usar o MatIA, insira sua chave de API da Anthropic.<br><br>
+      Não tem uma? Crie gratuitamente em <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>
     </p>
     <div class="mrow">
       <input type="password" id="keyinp" placeholder="sk-ant-..." autocomplete="off"
@@ -145,6 +165,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:13p
   </div>
 </div>
 
+<!-- ── HEADER ────────────────────────────────────────── -->
 <header>
   <div class="logo">
     <div class="logo-icon">📐</div>
@@ -154,26 +175,21 @@ header{display:flex;align-items:center;justify-content:space-between;padding:13p
     </div>
   </div>
   <div class="hright">
-    <div class="dot"></div><span class="dot-lbl">online</span>
+    <div class="dot"></div>
+    <span class="dot-lbl">online</span>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
     <button class="hbtn" onclick="reset()">↺ Nova sessão</button>
-    <button class="hbtn" onclick="changeKey()" title="Trocar chave">🔑</button>
+    <button class="hbtn" onclick="changeKey()">🔑 Chave</button>
   </div>
 </header>
 
-<div class="lvl-bar">
-  <span class="lvl" id="l1">Nível 1 · Iniciante</span>
-  <span class="lvl-sep">→</span>
-  <span class="lvl" id="l2">Nível 2 · Desenvolvendo</span>
-  <span class="lvl-sep">→</span>
-  <span class="lvl" id="l3">Nível 3 · Avançado</span>
-</div>
-
+<!-- ── CHAT ──────────────────────────────────────────── -->
 <div class="chat-wrap">
   <div id="chat"></div>
   <div id="welcome">
     <div class="wi">🔮</div>
     <div class="wt"><span>Geometria Espacial</span><br>com inteligência</div>
-    <p class="ws">Tutor virtual para dominar sólidos geométricos — do Ensino Médio ao ENEM. Escolha um tema:</p>
+    <p class="ws">Seu tutor de Geometria Espacial para o Ensino Médio e ENEM. Por onde quer começar?</p>
     <div class="wg">
       <button class="wc" onclick="go('cilindro')">🥤 Cilindro</button>
       <button class="wc" onclick="go('cone')">🍦 Cone</button>
@@ -185,62 +201,115 @@ header{display:flex;align-items:center;justify-content:space-between;padding:13p
   </div>
 </div>
 
+<!-- ── CHIPS ──────────────────────────────────────────── -->
 <div id="chips">
   <button class="chip" onclick="chip('Não entendi, pode explicar de novo?')">🔄 Não entendi</button>
   <button class="chip" onclick="chip('Me dá uma dica')">💡 Dica</button>
-  <button class="chip" onclick="chip('Quero mais dificuldade')">⬆️ Mais difícil</button>
+  <button class="chip" onclick="chip('Quero algo mais desafiador')">⬆️ Mais difícil</button>
   <button class="chip" onclick="chip('Quero um Desafio ENEM!')">🎯 Desafio ENEM</button>
   <button class="chip" onclick="chip('Me conta uma curiosidade histórica')">📜 Curiosidade</button>
   <button class="chip" onclick="chip('Como seria a planificação desse sólido?')">📐 Planificação</button>
 </div>
 
+<!-- ── IMAGE PREVIEW ──────────────────────────────────── -->
+<div id="img-preview">
+  <img id="preview-thumb" src="" alt="preview"/>
+  <span class="img-name" id="preview-name"></span>
+  <button class="img-remove" onclick="removeImage()" title="Remover imagem">✕</button>
+</div>
+
+<!-- ── INPUT ──────────────────────────────────────────── -->
 <div class="inp-area">
   <div class="irow">
+    <div class="img-btn" title="Enviar imagem de questão">
+      🖼️
+      <input type="file" accept="image/*" onchange="handleImage(event)"/>
+    </div>
     <textarea id="inp" rows="1" placeholder="Digite sua resposta ou pergunta..."></textarea>
     <button id="sbtn" onclick="send()">➤</button>
   </div>
-  <div class="hint">Enter para enviar · Shift+Enter para nova linha</div>
+  <div class="hint">Enter para enviar · Shift+Enter para nova linha · 🖼️ para enviar uma questão em imagem</div>
 </div>
 
 <script>
-const SYS=`Você é MatIA, tutor virtual especialista em Geometria Espacial para o Ensino Médio.
-Guie o aluno sem dar respostas prontas. Seja empolgante, curioso e conecte ao ENEM e ao cotidiano.
+/* ══ SYSTEM PROMPT ══════════════════════════════════════════════════════
+   IMPORTANTE: Toda a pedagogia acontece de forma INVISÍVEL ao aluno.
+   Nunca mencione: níveis, etapas, diagnóstico, Pólya, Vygotsky, Bloom,
+   "você está no nível X", "etapa 1", "vamos para a próxima etapa", etc.
+   O aluno deve sentir que está apenas conversando naturalmente.
+════════════════════════════════════════════════════════════════════════ */
+const SYS = `Você é MatIA, um tutor de Geometria Espacial para o Ensino Médio.
+Seu estilo é descontraído, próximo e empolgante — como um amigo que manja muito de geometria.
+
+REGRA DE OURO: toda a sua pedagogia é INVISÍVEL. Nunca diga ao aluno que está fazendo um diagnóstico, aplicando uma metodologia, passando por etapas ou classificando-o em algum nível. Conduza tudo de forma natural, como se fosse conversa.
+
+JAMAIS diga ou escreva frases como:
+- "Etapa 1", "Etapa 2", "vamos para a próxima etapa"
+- "Nível 1", "Nível 2", "você está no nível X"
+- "Vou te diagnosticar", "vou avaliar seu conhecimento"
+- "Segundo o método de Pólya...", "aplicando a ZDP..."
+- "Você é iniciante / avançado / em desenvolvimento"
+- "Diagnóstico concluído"
+
+QUANDO RECEBER UMA IMAGEM:
+Analise a questão com atenção. Identifique o sólido e os dados. Conduza o aluno à solução fazendo perguntas, nunca resolvendo diretamente. Comece com algo natural como: "Que questão interessante! O que você já conseguiu identificar aqui?"
+
+AO INICIAR UMA CONVERSA SOBRE UM SÓLIDO:
+1. Comece com uma curiosidade histórica ou conexão com o mundo real — algo que desperte interesse genuíno.
+2. Faça perguntas naturais para entender o que o aluno já sabe. Exemplo: "Antes de calcular qualquer coisa, me fala — o que vem na sua cabeça quando pensa num cilindro?" Isso parece curiosidade, não avaliação.
+3. Se o aluno demonstrar dificuldade, comece pelo mais simples. Se demonstrar domínio, avance para algo mais desafiador. Faça isso naturalmente, sem anunciar.
+
+AO RESOLVER PROBLEMAS:
+Conduza o aluno pelas etapas de forma conversacional:
+- Em vez de "Etapa 1: compreender o problema", diga: "Antes de calcular qualquer coisa — o que exatamente a questão quer descobrir?"
+- Em vez de "Etapa 2: planejar", diga: "Que fórmula você acha que encaixa aqui?"
+- Em vez de "Etapa 3: executar", diga: "Tenta substituir os valores aí e me mostra o que dá!"
+- Em vez de "Etapa 4: verificar", diga: "Esse resultado faz sentido pra você? Consegue imaginar isso no mundo real?"
+
+QUANDO O ALUNO ERRAR:
+Nunca corrija direto. Ajude com perguntas progressivamente mais guiadas:
+- Primeiro: "Hmm, relê o enunciado — o que o problema quer encontrar mesmo?"
+- Se ainda errar: "Qual fórmula você usou? Deixa eu te dar um lembrete: [fórmula]"
+- Se ainda errar: "Vamos com um exemplo menor. [exemplo simples]. Agora tenta de novo!"
+- Só depois explique passo a passo, de forma natural.
+
+CELEBRE sempre as tentativas: "Quase! Você pegou a ideia, só escorregou num detalhe."
+Nunca deixe o aluno se sentir mal por errar.
+
+APÓS RESOLVER: conecte ao ENEM de forma animada — "Olha, esse tipo de questão cai bastante no ENEM! A pegadinha que todo mundo cai é..." — e ofereça um desafio se ele quiser.
 
 FORMATAÇÃO:
-- ** negrito, * itálico, > blockquote, - listas
-- [F: expressão] para fórmulas matemáticas
-- [E: mensagem] para alertas ENEM
-- Máximo 4 parágrafos por resposta. UMA pergunta por vez.
+- ** negrito para termos importantes
+- * itálico para ênfase
+- > blockquote para curiosidades e dicas especiais
+- - para listas
+- [F: expressão] para fórmulas matemáticas (serão exibidas com destaque)
+- [E: mensagem] para alertas ENEM (serão exibidos com destaque)
+- Máximo 4 parágrafos por resposta
+- UMA pergunta por vez — nunca várias seguidas
+- Linguagem jovem, próxima, com emojis moderados 📐🔺🔮📦🎯💡`;
 
-FLUXO AO INICIAR (obrigatório):
-1. Boas-vindas com curiosidade histórica do sólido escolhido
-2. Pergunta diagnóstica 1: quais são os elementos do sólido
-3. Pergunta diagnóstica 2: cálculo simples de área ou volume
-4. Classifique: NÍVEL 1 Iniciante / NÍVEL 2 Em desenvolvimento / NÍVEL 3 Avançado
-5. Adapte toda a sessão ao nível
-
-ANTES DE QUALQUER FÓRMULA:
-- Visualização mental com analogia cotidiana
-- Estudo de caso real contextualizado
-
-RESOLUÇÃO (Pólya — 4 etapas, NUNCA pule):
-1. Compreender: dados e incógnita
-2. Planejar: qual fórmula e por quê
-3. Executar: NUNCA resolva pelo aluno — peça que ele tente
-4. Verificar: interpretar no contexto real
-
-DICAS PROGRESSIVAS (quando errar, em ordem):
-- Nível 1: redirecionamento sutil
-- Nível 2: fórmula ou conceito-chave
-- Nível 3: exemplo análogo mais simples
-- Após 3 níveis: explique passo a passo
-
-APÓS CADA PROBLEMA: pegadinha do ENEM + Desafio ENEM opcional.
-TOM: linguagem jovem, celebre tentativas, emojis moderados 📐🔺🔮📦🎯💡
-NUNCA: dê resposta antes das dicas, apresente fórmula antes da visualização.`;
-
+/* ══ STATE ══════════════════════════════════════════════ */
 let hist=[],busy=false,started=false,KEY='';
+let pendingImage=null;
 
+/* ══ THEME ══════════════════════════════════════════════ */
+function initTheme(){
+  const t=localStorage.getItem('matia_theme')||'dark';
+  applyTheme(t);
+}
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙';
+  localStorage.setItem('matia_theme',t);
+}
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  applyTheme(cur==='dark'?'light':'dark');
+}
+initTheme();
+
+/* ══ API KEY ═════════════════════════════════════════════ */
 function initKey(){
   const k=localStorage.getItem('matia_key');
   if(k){KEY=k;document.getElementById('modal').classList.add('hidden');}
@@ -260,6 +329,35 @@ function changeKey(){
 }
 initKey();
 
+/* ══ IMAGE HANDLING ══════════════════════════════════════ */
+function handleImage(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const dataUrl=ev.target.result;
+    const base64=dataUrl.split(',')[1];
+    const mediaType=file.type||'image/jpeg';
+    pendingImage={base64,mediaType,dataUrl,name:file.name};
+    document.getElementById('preview-thumb').src=dataUrl;
+    document.getElementById('preview-name').textContent=file.name;
+    document.getElementById('img-preview').style.display='flex';
+    if(!started){
+      document.getElementById('welcome').classList.add('gone');
+      document.getElementById('chips').style.display='flex';
+      started=true;
+    }
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
+function removeImage(){
+  pendingImage=null;
+  document.getElementById('img-preview').style.display='none';
+  document.getElementById('preview-thumb').src='';
+}
+
+/* ══ MARKDOWN RENDERER ═══════════════════════════════════ */
 function md(t){
   t=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   t=t.replace(/\[E:\s*([\s\S]*?)\]/g,(_,c)=>`<div class="en"><div class="en-t">💡 ENEM Alert</div>${c.trim()}</div>`);
@@ -277,28 +375,42 @@ function md(t){
   }).join('');
 }
 
-function addMsg(role,html,typing=false){
+/* ══ ADD MESSAGE ═════════════════════════════════════════ */
+function addMsg(role,html,imgDataUrl=null,typing=false){
   const c=document.getElementById('chat');
   const w=document.createElement('div');w.className=`mw ${role==='ai'?'a':'u'}`;
   const av=document.createElement('div');av.className='av';av.textContent=role==='ai'?'📐':'👤';
   const b=document.createElement('div');b.className='bub';
-  if(typing){b.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';w.id='typ';}
-  else b.innerHTML=html;
+  if(typing){
+    b.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+    w.id='typ';
+  } else {
+    if(imgDataUrl){
+      const img=document.createElement('img');
+      img.src=imgDataUrl;img.className='msg-img';
+      b.appendChild(img);
+    }
+    const d=document.createElement('div');
+    d.innerHTML=html;
+    b.appendChild(d);
+  }
   w.appendChild(av);w.appendChild(b);c.appendChild(w);
   c.scrollTop=c.scrollHeight;return w;
 }
 
-function setLvl(t){
-  const l=t.toLowerCase();
-  ['l1','l2','l3'].forEach(id=>document.getElementById(id).classList.remove('on'));
-  if(l.includes('nível 3')||l.includes('avançado'))document.getElementById('l3').classList.add('on');
-  else if(l.includes('nível 2')||l.includes('em desenvolvimento'))document.getElementById('l2').classList.add('on');
-  else if(l.includes('nível 1')||l.includes('iniciante'))document.getElementById('l1').classList.add('on');
-}
-
-async function callAPI(msg){
-  hist.push({role:'user',content:msg});
-  const typ=addMsg('ai','',true);
+/* ══ API CALL ════════════════════════════════════════════ */
+async function callAPI(userText,image=null){
+  let content;
+  if(image){
+    content=[
+      {type:'image',source:{type:'base64',media_type:image.mediaType,data:image.base64}},
+      {type:'text',text:userText||'Pode me ajudar a resolver essa questão?'}
+    ];
+  } else {
+    content=userText;
+  }
+  hist.push({role:'user',content});
+  const typ=addMsg('ai','',null,true);
   try{
     const r=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -308,35 +420,46 @@ async function callAPI(msg){
         'anthropic-version':'2023-06-01',
         'anthropic-dangerous-direct-browser-access':'true'
       },
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,system:SYS,messages:hist})
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:1000,
+        system:SYS,
+        messages:hist
+      })
     });
     const d=await r.json();
     typ.remove();
-    if(d.error){addMsg('ai',`<span class="err">Erro: ${d.error.message}</span>`);hist.pop();return;}
+    if(d.error){
+      addMsg('ai',`<span class="err">Erro: ${d.error.message}</span>`);
+      hist.pop();return;
+    }
     const txt=d.content?.map(b=>b.text||'').join('')||'Sem resposta.';
     hist.push({role:'assistant',content:txt});
     addMsg('ai',md(txt));
-    setLvl(txt);
   }catch(e){
     typ.remove();
-    addMsg('ai',`<span class="err">Erro: ${e.message}</span>`);
+    addMsg('ai',`<span class="err">Erro de conexão: ${e.message}</span>`);
     hist.pop();
   }
 }
 
+/* ══ SEND ════════════════════════════════════════════════ */
 async function send(ov){
   if(busy)return;
   const inp=document.getElementById('inp');
-  const txt=(ov||inp.value).trim();if(!txt)return;
+  const txt=(ov||inp.value).trim();
+  const img=pendingImage;
+  if(!txt&&!img)return;
   if(!started){
     document.getElementById('welcome').classList.add('gone');
     document.getElementById('chips').style.display='flex';
     started=true;
   }
   inp.value='';inp.style.height='auto';
-  addMsg('user',md(txt));
+  addMsg('user',txt?md(txt):'<em>📎 Questão enviada por imagem</em>',img?img.dataUrl:null);
+  removeImage();
   busy=true;document.getElementById('sbtn').disabled=true;
-  await callAPI(txt);
+  await callAPI(txt,img);
   busy=false;document.getElementById('sbtn').disabled=false;
   inp.focus();
 }
@@ -344,14 +467,16 @@ async function send(ov){
 function chip(t){send(t);}
 function go(t){send(`Quero estudar ${t}`);}
 
+/* ══ RESET ═══════════════════════════════════════════════ */
 function reset(){
-  hist=[];busy=false;started=false;
+  hist=[];busy=false;started=false;pendingImage=null;
   document.getElementById('chat').innerHTML='';
   document.getElementById('welcome').classList.remove('gone');
   document.getElementById('chips').style.display='none';
-  ['l1','l2','l3'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('img-preview').style.display='none';
 }
 
+/* ══ INPUT EVENTS ════════════════════════════════════════ */
 document.getElementById('inp').addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
 });
