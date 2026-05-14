@@ -4,7 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>MatIA — Geometria Espacial</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 /* ══ TOKENS ══════════════════════════════════════════════ */
 [data-theme="dark"]{
@@ -12,22 +13,20 @@
   --acc:#4f8cff;--acc2:#a78bfa;--acc3:#34d399;
   --txt:#e8eaf0;--txt2:#8b93a8;--txt3:#4a5168;
   --ub:#1a2340;--ab:#111826;--glow:rgba(79,140,255,.18);
-  --shadow:rgba(0,0,0,.5);
+  --shadow:rgba(0,0,0,.5);--renderer-bg:#0d1117;
 }
 [data-theme="light"]{
   --bg:#f4f6fb;--sur:#ffffff;--sur2:#eef1f8;--bor:#d4d9e8;
   --acc:#2563eb;--acc2:#7c3aed;--acc3:#059669;
   --txt:#1a1d2e;--txt2:#4a5168;--txt3:#9ba3b8;
   --ub:#dbeafe;--ab:#f8f9fc;--glow:rgba(37,99,235,.15);
-  --shadow:rgba(0,0,0,.12);
+  --shadow:rgba(0,0,0,.12);--renderer-bg:#eef1f8;
 }
-
-/* ══ RESET ═══════════════════════════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font-size:15px;height:100vh;display:flex;flex-direction:column;overflow:hidden;transition:background .3s,color .3s}
 
-/* ══ API KEY MODAL ═══════════════════════════════════════ */
-#modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px}
+/* ── MODAL ──────────────────────────────────────────────── */
+#modal{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.9);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:24px}
 #modal.hidden{display:none}
 .mbox{background:var(--sur);border:1px solid var(--bor);border-radius:18px;padding:34px 30px;max-width:420px;width:100%;box-shadow:0 30px 70px var(--shadow);animation:fadeUp .3s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -35,129 +34,156 @@ body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;font
 .mtit{font-family:'Syne',sans-serif;font-weight:800;font-size:21px;margin-bottom:8px;color:var(--txt)}
 .msub{color:var(--txt2);font-size:13.5px;line-height:1.6;margin-bottom:22px}
 .msub a{color:var(--acc);text-decoration:none}
-.msub a:hover{text-decoration:underline}
 .mrow{display:flex;gap:9px;margin-bottom:10px}
 #keyinp{flex:1;background:var(--sur2);border:1px solid var(--bor);border-radius:10px;padding:10px 13px;color:var(--txt);font-family:'DM Mono',monospace;font-size:13px;outline:none;transition:border-color .2s}
 #keyinp:focus{border-color:var(--acc)}
 #keyinp::placeholder{color:var(--txt3)}
 .mbtn{background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;border-radius:10px;padding:10px 18px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap}
-.mbtn:hover{opacity:.9}
 .mnote{font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace}
 .mnote::before{content:'🔒  '}
 .merr{color:#ef4444;font-size:12px;margin-top:7px;display:none}
 
-/* ══ HEADER ══════════════════════════════════════════════ */
-header{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;border-bottom:1px solid var(--bor);background:var(--sur);flex-shrink:0;z-index:10;position:relative;transition:background .3s,border-color .3s}
+/* ── HEADER ─────────────────────────────────────────────── */
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--bor);background:var(--sur);flex-shrink:0;z-index:10;position:relative;transition:background .3s}
 .logo{display:flex;align-items:center;gap:10px}
-.logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 16px var(--glow)}
-.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 14px var(--glow)}
+.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
 .logo-sub{font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
-.hright{display:flex;align-items:center;gap:7px}
+.hright{display:flex;align-items:center;gap:6px}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--acc3);box-shadow:0 0 7px var(--acc3);animation:pulse 2s infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .dot-lbl{font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace}
-.hbtn{background:var(--sur2);border:1px solid var(--bor);color:var(--txt2);padding:5px 11px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.hbtn{background:var(--sur2);border:1px solid var(--bor);color:var(--txt2);padding:5px 10px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;white-space:nowrap}
 .hbtn:hover{border-color:var(--acc);color:var(--acc)}
-.theme-btn{width:34px;height:34px;border-radius:9px;background:var(--sur2);border:1px solid var(--bor);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .2s}
+.hbtn.viewer-active{border-color:var(--acc2);color:var(--acc2);background:rgba(167,139,250,.1)}
+.theme-btn{width:32px;height:32px;border-radius:8px;background:var(--sur2);border:1px solid var(--bor);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
 .theme-btn:hover{border-color:var(--acc)}
 
-/* ══ CHAT ════════════════════════════════════════════════ */
-.chat-wrap{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
-#chat{flex:1;overflow-y:auto;padding:20px 0;scroll-behavior:smooth}
+/* ── MAIN LAYOUT ─────────────────────────────────────────── */
+.app-layout{flex:1;display:flex;overflow:hidden;min-height:0}
+
+/* ── CHAT SIDE ────────────────────────────────────────────── */
+.chat-side{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#chat{flex:1;overflow-y:auto;padding:18px 0;scroll-behavior:smooth}
 #chat::-webkit-scrollbar{width:3px}
 #chat::-webkit-scrollbar-thumb{background:var(--bor);border-radius:3px}
-.mw{display:flex;padding:5px 22px;animation:fs .28s ease;max-width:740px;margin:0 auto;width:100%}
+.mw{display:flex;padding:5px 18px;animation:fs .28s ease;max-width:680px;margin:0 auto;width:100%}
 @keyframes fs{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.mw.u{justify-content:flex-end}
-.mw.a{justify-content:flex-start}
-.av{width:30px;height:30px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:2px}
-.mw.a .av{background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 0 10px var(--glow);margin-right:9px}
-.mw.u .av{background:var(--sur2);border:1px solid var(--bor);margin-left:9px;order:2}
-.bub{max-width:min(520px,80vw);padding:11px 15px;border-radius:13px;line-height:1.65;font-size:14.5px;transition:background .3s,border-color .3s}
+.mw.u{justify-content:flex-end}.mw.a{justify-content:flex-start}
+.av{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;margin-top:2px}
+.mw.a .av{background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 0 10px var(--glow);margin-right:8px}
+.mw.u .av{background:var(--sur2);border:1px solid var(--bor);margin-left:8px;order:2}
+.bub{max-width:min(500px,82vw);padding:10px 14px;border-radius:13px;line-height:1.65;font-size:14px;transition:background .3s}
 .mw.a .bub{background:var(--ab);border:1px solid var(--bor);border-top-left-radius:3px;color:var(--txt)}
 .mw.u .bub{background:var(--ub);border:1px solid rgba(79,140,255,.35);border-top-right-radius:3px;color:var(--txt)}
-.bub strong{color:var(--acc);font-weight:600}
-.bub em{color:var(--acc2);font-style:italic}
-.bub .fm{font-family:'DM Mono',monospace;font-size:13px;background:var(--sur2);border-left:2px solid var(--acc);padding:7px 11px;margin:7px 0;border-radius:0 7px 7px 0;color:var(--acc)}
-.bub .en{background:var(--ub);border:1px solid var(--bor);border-radius:9px;padding:9px 12px;margin:7px 0}
-.bub .en-t{font-size:11px;font-weight:700;font-family:'Syne',sans-serif;color:var(--acc);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.bub strong{color:var(--acc);font-weight:600}.bub em{color:var(--acc2);font-style:italic}
+.bub .fm{font-family:'DM Mono',monospace;font-size:12.5px;background:var(--sur2);border-left:2px solid var(--acc);padding:6px 10px;margin:6px 0;border-radius:0 6px 6px 0;color:var(--acc)}
+.bub .en{background:var(--ub);border:1px solid var(--bor);border-radius:8px;padding:8px 11px;margin:6px 0}
+.bub .en-t{font-size:11px;font-weight:700;font-family:'Syne',sans-serif;color:var(--acc);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
 .bub blockquote{border-left:2px solid var(--acc2);padding-left:10px;margin:5px 0;color:var(--txt2);font-style:italic}
-.bub ul{padding-left:16px;margin:3px 0}
-.bub li{margin:2px 0}
-.bub p{margin:3px 0}
+.bub ul{padding-left:15px;margin:3px 0}.bub li{margin:2px 0}.bub p{margin:3px 0}
 .bub .err{color:#ef4444;font-size:12px;font-family:'DM Mono',monospace}
-.bub .msg-img{max-width:100%;border-radius:8px;margin:6px 0;border:1px solid var(--bor);display:block}
-
-/* Typing */
+.bub .msg-img{max-width:100%;border-radius:8px;margin:5px 0;border:1px solid var(--bor);display:block}
 .typing{display:flex;align-items:center;gap:4px;padding:3px 2px}
 .typing span{width:5px;height:5px;border-radius:50%;background:var(--acc);opacity:.3;animation:bk 1.2s ease infinite}
-.typing span:nth-child(2){animation-delay:.2s}
-.typing span:nth-child(3){animation-delay:.4s}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
 @keyframes bk{0%,80%,100%{opacity:.2}40%{opacity:1}}
 
-/* ══ WELCOME ══════════════════════════════════════════════ */
-#welcome{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 22px;text-align:center;transition:opacity .45s;pointer-events:none;background:var(--bg);z-index:20}
+/* ── WELCOME ──────────────────────────────────────────────── */
+#welcome{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 20px;text-align:center;transition:opacity .45s;pointer-events:none;background:var(--bg);z-index:20}
 #welcome.gone{opacity:0;pointer-events:none}
-.wi{font-size:50px;margin-bottom:14px;animation:float 3s ease-in-out infinite}
+.wi{font-size:46px;margin-bottom:12px;animation:float 3s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.wt{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(24px,4vw,36px);line-height:1.1;margin-bottom:8px}
+.wt{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(22px,4vw,34px);line-height:1.1;margin-bottom:8px}
 .wt span{background:linear-gradient(90deg,var(--acc),var(--acc2),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.ws{color:var(--txt2);max-width:380px;line-height:1.6;margin-bottom:28px;font-size:14px}
-.wg{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;pointer-events:all;max-width:480px}
-.wc{background:var(--sur);border:1px solid var(--bor);color:var(--txt);padding:9px 16px;border-radius:11px;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px var(--shadow)}
-.wc:hover{border-color:var(--acc2);background:var(--sur2);transform:translateY(-2px);box-shadow:0 5px 18px var(--shadow)}
+.ws{color:var(--txt2);max-width:360px;line-height:1.6;margin-bottom:26px;font-size:14px}
+.wg{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;pointer-events:all;max-width:440px}
+.wc{background:var(--sur);border:1px solid var(--bor);color:var(--txt);padding:8px 15px;border-radius:10px;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px var(--shadow)}
+.wc:hover{border-color:var(--acc2);background:var(--sur2);transform:translateY(-2px)}
 
-/* ══ CHIPS ════════════════════════════════════════════════ */
-#chips{display:none;gap:7px;overflow-x:auto;padding:9px 22px 5px;flex-shrink:0;scrollbar-width:none;max-width:740px;margin:0 auto;width:100%}
+/* ── CHIPS ────────────────────────────────────────────────── */
+#chips{display:none;gap:6px;overflow-x:auto;padding:8px 18px 4px;flex-shrink:0;scrollbar-width:none;max-width:680px;margin:0 auto;width:100%}
 #chips::-webkit-scrollbar{display:none}
-.chip{flex-shrink:0;background:var(--sur2);border:1px solid var(--bor);color:var(--txt2);padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:'DM Sans',sans-serif}
+.chip{flex-shrink:0;background:var(--sur2);border:1px solid var(--bor);color:var(--txt2);padding:4px 11px;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .2s}
 .chip:hover{border-color:var(--acc2);color:var(--acc2)}
 
-/* ══ IMAGE PREVIEW ════════════════════════════════════════ */
-#img-preview{display:none;align-items:center;gap:10px;padding:8px 22px;background:var(--sur2);border-top:1px solid var(--bor);flex-shrink:0;max-width:740px;margin:0 auto;width:100%}
-#img-preview img{height:52px;border-radius:7px;border:1px solid var(--bor);object-fit:cover}
+/* ── IMAGE PREVIEW ────────────────────────────────────────── */
+#img-preview{display:none;align-items:center;gap:10px;padding:7px 18px;background:var(--sur2);border-top:1px solid var(--bor);flex-shrink:0;max-width:680px;margin:0 auto;width:100%}
+#img-preview img{height:48px;border-radius:6px;border:1px solid var(--bor);object-fit:cover}
 .img-name{font-size:12px;color:var(--txt2);font-family:'DM Mono',monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.img-remove{background:none;border:none;color:var(--txt3);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:5px;transition:color .2s}
+.img-remove{background:none;border:none;color:var(--txt3);font-size:16px;cursor:pointer;padding:2px 5px;border-radius:5px;transition:color .2s}
 .img-remove:hover{color:#ef4444}
 
-/* ══ INPUT ════════════════════════════════════════════════ */
-.inp-area{padding:10px 22px 14px;border-top:1px solid var(--bor);background:var(--sur);flex-shrink:0;max-width:740px;margin:0 auto;width:100%;position:relative;z-index:10;transition:background .3s}
-.irow{display:flex;align-items:flex-end;gap:8px;background:var(--sur2);border:1px solid var(--bor);border-radius:13px;padding:8px 8px 8px 14px;transition:border-color .2s,background .3s}
-.irow:focus-within{border-color:var(--acc);box-shadow:0 0 14px var(--glow)}
-#inp{flex:1;background:none;border:none;outline:none;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14.5px;resize:none;max-height:110px;line-height:1.5}
+/* ── INPUT AREA ───────────────────────────────────────────── */
+.inp-area{padding:9px 18px 13px;border-top:1px solid var(--bor);background:var(--sur);flex-shrink:0;max-width:680px;margin:0 auto;width:100%;transition:background .3s}
+.irow{display:flex;align-items:flex-end;gap:7px;background:var(--sur2);border:1px solid var(--bor);border-radius:12px;padding:7px 7px 7px 13px;transition:border-color .2s}
+.irow:focus-within{border-color:var(--acc);box-shadow:0 0 12px var(--glow)}
+#inp{flex:1;background:none;border:none;outline:none;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:14px;resize:none;max-height:100px;line-height:1.5}
 #inp::placeholder{color:var(--txt3)}
-.img-btn{width:34px;height:34px;border-radius:9px;flex-shrink:0;background:var(--sur);border:1px solid var(--bor);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;color:var(--txt2);position:relative;overflow:hidden}
-.img-btn:hover{border-color:var(--acc2);color:var(--acc2)}
+.img-btn{width:32px;height:32px;border-radius:8px;flex-shrink:0;background:var(--sur);border:1px solid var(--bor);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;position:relative;overflow:hidden;transition:all .2s}
+.img-btn:hover{border-color:var(--acc2)}
 .img-btn input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
-#sbtn{width:34px;height:34px;border-radius:9px;flex-shrink:0;background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;transition:all .2s;box-shadow:0 0 10px var(--glow)}
+#sbtn{width:32px;height:32px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;transition:all .2s;box-shadow:0 0 9px var(--glow)}
 #sbtn:hover{transform:scale(1.07)}
 #sbtn:disabled{opacity:.35;cursor:not-allowed;transform:none}
-.hint{font-size:10px;color:var(--txt3);text-align:center;margin-top:6px;font-family:'DM Mono',monospace}
+.hint{font-size:10px;color:var(--txt3);text-align:center;margin-top:5px;font-family:'DM Mono',monospace}
 
-@media(max-width:600px){
-  header{padding:10px 14px}
-  .inp-area{padding:8px 12px 12px}
-  #chips{padding:7px 12px 3px}
-  .mw{padding:4px 12px}
-  .bub{font-size:14px}
+/* ══ 3D VIEWER SIDE ══════════════════════════════════════════ */
+.viewer-side{width:0;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid var(--bor);background:var(--sur);overflow:hidden;transition:width .35s cubic-bezier(.4,0,.2,1);position:relative}
+.viewer-side.open{width:400px}
+
+.vtabs{display:flex;border-bottom:1px solid var(--bor);flex-shrink:0;background:var(--sur2)}
+.vtab{flex:1;padding:9px 0;background:none;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--txt3);letter-spacing:.03em;transition:all .2s;border-bottom:2px solid transparent}
+.vtab.active{color:var(--acc);border-bottom-color:var(--acc)}
+.vtab:hover:not(.active){color:var(--txt2)}
+
+.canvas-wrap{flex:1;position:relative;overflow:hidden;background:var(--renderer-bg);min-height:0}
+#threeCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+#threeCanvas:active{cursor:grabbing}
+#netCanvas{position:absolute;inset:0;width:100%;height:100%;display:none}
+
+/* Rotate hint */
+.rotate-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--txt3);font-family:'DM Mono',monospace;pointer-events:none;background:var(--sur);padding:3px 10px;border-radius:20px;border:1px solid var(--bor);opacity:.7;white-space:nowrap}
+
+/* Solid selector */
+.solid-bar{display:flex;padding:8px;gap:5px;flex-shrink:0;justify-content:center;border-top:1px solid var(--bor);background:var(--sur2);flex-wrap:wrap}
+.solid-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--sur);border:1px solid var(--bor);border-radius:9px;padding:5px 8px;cursor:pointer;transition:all .2s;min-width:52px}
+.solid-btn:hover{border-color:var(--acc2);background:var(--sur2)}
+.solid-btn.active{border-color:var(--acc);background:var(--ub)}
+.solid-btn .sb-emoji{font-size:17px}
+.solid-btn .sb-label{font-size:9px;color:var(--txt2);font-family:'DM Mono',monospace;white-space:nowrap}
+.solid-btn.active .sb-label{color:var(--acc)}
+
+/* Solid info */
+.solid-info{padding:8px 14px;flex-shrink:0;border-top:1px solid var(--bor)}
+.solid-info-name{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--txt);margin-bottom:3px}
+.solid-info-els{font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace;line-height:1.6}
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media(max-width:860px){
+  .viewer-side.open{width:100%;height:320px;border-left:none;border-top:1px solid var(--bor)}
+  .app-layout{flex-direction:column}
+  .chat-side{min-height:0}
   .dot-lbl{display:none}
+  .hbtn span{display:none}
+}
+@media(max-width:500px){
+  header{padding:10px 12px}
+  .inp-area{padding:7px 10px 11px}
+  .mw{padding:4px 10px}
 }
 </style>
 </head>
 <body>
 
-<!-- ── API KEY MODAL ─────────────────────────────────── -->
+<!-- ── MODAL ──────────────────────────────────────────────── -->
 <div id="modal">
   <div class="mbox">
     <div class="mico">🔑</div>
     <div class="mtit">Chave de Acesso</div>
-    <p class="msub">
-      Para usar o MatIA, insira sua chave de API da Anthropic.<br><br>
-      Não tem uma? Crie gratuitamente em <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>
-    </p>
+    <p class="msub">Para usar o MatIA insira sua chave de API da Anthropic.<br><br>Crie gratuitamente em <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
     <div class="mrow">
-      <input type="password" id="keyinp" placeholder="sk-ant-..." autocomplete="off"
-             onkeydown="if(event.key==='Enter')saveKey()"/>
+      <input type="password" id="keyinp" placeholder="sk-ant-..." autocomplete="off" onkeydown="if(event.key==='Enter')saveKey()"/>
       <button class="mbtn" onclick="saveKey()">Entrar</button>
     </div>
     <div class="merr" id="kerr">Chave inválida. Deve começar com "sk-".</div>
@@ -165,199 +191,682 @@ header{display:flex;align-items:center;justify-content:space-between;padding:13p
   </div>
 </div>
 
-<!-- ── HEADER ────────────────────────────────────────── -->
+<!-- ── HEADER ─────────────────────────────────────────────── -->
 <header>
   <div class="logo">
     <div class="logo-icon">📐</div>
-    <div>
-      <div class="logo-name">MatIA</div>
-      <div class="logo-sub">Geometria Espacial · EM</div>
-    </div>
+    <div><div class="logo-name">MatIA</div><div class="logo-sub">Geometria Espacial · Pólya · Vygotsky · Bloom · Duval</div></div>
   </div>
   <div class="hright">
-    <div class="dot"></div>
-    <span class="dot-lbl">online</span>
-    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
-    <button class="hbtn" onclick="reset()">↺ Nova sessão</button>
-    <button class="hbtn" onclick="changeKey()">🔑 Chave</button>
+    <div class="dot"></div><span class="dot-lbl">online</span>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <button class="hbtn" id="viewerToggle" onclick="toggleViewer()">🔮 <span>3D</span></button>
+    <button class="hbtn" onclick="reset()">↺ <span>Nova sessão</span></button>
+    <button class="hbtn" onclick="changeKey()">🔑</button>
   </div>
 </header>
 
-<!-- ── CHAT ──────────────────────────────────────────── -->
-<div class="chat-wrap">
-  <div id="chat"></div>
-  <div id="welcome">
-    <div class="wi">🔮</div>
-    <div class="wt"><span>Geometria Espacial</span><br>com inteligência</div>
-    <p class="ws">Seu tutor de Geometria Espacial para o Ensino Médio e ENEM. Por onde quer começar?</p>
-    <div class="wg">
-      <button class="wc" onclick="go('cilindro')">🥤 Cilindro</button>
-      <button class="wc" onclick="go('cone')">🍦 Cone</button>
-      <button class="wc" onclick="go('esfera')">🔮 Esfera</button>
-      <button class="wc" onclick="go('pirâmide')">🔺 Pirâmide</button>
-      <button class="wc" onclick="go('prisma e paralelepípedo')">📦 Prisma</button>
-      <button class="wc" onclick="go('poliedros e Relação de Euler')">🧊 Poliedros</button>
+<!-- ── APP LAYOUT ─────────────────────────────────────────── -->
+<div class="app-layout">
+
+  <!-- CHAT SIDE -->
+  <div class="chat-side">
+    <div style="position:relative;flex:1;overflow:hidden;display:flex;flex-direction:column">
+      <div id="chat"></div>
+      <div id="welcome">
+        <div class="wi">🔮</div>
+        <div class="wt"><span>Geometria Espacial</span><br>com inteligência</div>
+        <p class="ws">Tutor adaptativo de Geometria Espacial — visualize, explore e resolva. Clique em 🔮 3D para ativar o visualizador interativo e a planificação dos sólidos.</p>
+        <div class="wg">
+          <button class="wc" onclick="go('cilindro')">🥤 Cilindro</button>
+          <button class="wc" onclick="go('cone')">🍦 Cone</button>
+          <button class="wc" onclick="go('esfera')">🔮 Esfera</button>
+          <button class="wc" onclick="go('pirâmide')">🔺 Pirâmide</button>
+          <button class="wc" onclick="go('prisma e paralelepípedo')">📦 Prisma</button>
+          <button class="wc" onclick="go('poliedros e Relação de Euler')">🧊 Poliedros</button>
+        </div>
+      </div>
+    </div>
+    <div id="chips">
+      <button class="chip" onclick="chip('Não entendi, pode explicar de novo?')">🔄 Não entendi</button>
+      <button class="chip" onclick="chip('Me dá uma dica')">💡 Dica</button>
+      <button class="chip" onclick="chip('Quero algo mais desafiador')">⬆️ Mais difícil</button>
+      <button class="chip" onclick="chip('Quero um Desafio ENEM!')">🎯 Desafio ENEM</button>
+      <button class="chip" onclick="chip('Me conta uma curiosidade histórica')">📜 Curiosidade</button>
+      <button class="chip" onclick="chip('Como seria a planificação desse sólido?')">📐 Planificação</button>
+    </div>
+    <div id="img-preview">
+      <img id="preview-thumb" src="" alt="preview"/>
+      <span class="img-name" id="preview-name"></span>
+      <button class="img-remove" onclick="removeImage()">✕</button>
+    </div>
+    <div class="inp-area">
+      <div class="irow">
+        <div class="img-btn" title="Enviar imagem de questão">🖼️<input type="file" accept="image/*" onchange="handleImage(event)"/></div>
+        <textarea id="inp" rows="1" placeholder="Digite sua resposta ou pergunta..."></textarea>
+        <button id="sbtn" onclick="send()">➤</button>
+      </div>
+      <div class="hint">Enter para enviar · Shift+Enter para nova linha · 🖼️ para enviar questão</div>
     </div>
   </div>
-</div>
 
-<!-- ── CHIPS ──────────────────────────────────────────── -->
-<div id="chips">
-  <button class="chip" onclick="chip('Não entendi, pode explicar de novo?')">🔄 Não entendi</button>
-  <button class="chip" onclick="chip('Me dá uma dica')">💡 Dica</button>
-  <button class="chip" onclick="chip('Quero algo mais desafiador')">⬆️ Mais difícil</button>
-  <button class="chip" onclick="chip('Quero um Desafio ENEM!')">🎯 Desafio ENEM</button>
-  <button class="chip" onclick="chip('Me conta uma curiosidade histórica')">📜 Curiosidade</button>
-  <button class="chip" onclick="chip('Como seria a planificação desse sólido?')">📐 Planificação</button>
-</div>
-
-<!-- ── IMAGE PREVIEW ──────────────────────────────────── -->
-<div id="img-preview">
-  <img id="preview-thumb" src="" alt="preview"/>
-  <span class="img-name" id="preview-name"></span>
-  <button class="img-remove" onclick="removeImage()" title="Remover imagem">✕</button>
-</div>
-
-<!-- ── INPUT ──────────────────────────────────────────── -->
-<div class="inp-area">
-  <div class="irow">
-    <div class="img-btn" title="Enviar imagem de questão">
-      🖼️
-      <input type="file" accept="image/*" onchange="handleImage(event)"/>
+  <!-- VIEWER SIDE -->
+  <div class="viewer-side" id="viewerSide">
+    <!-- Tabs -->
+    <div class="vtabs">
+      <button class="vtab active" id="tab3d" onclick="switchView('3d')">🔮 3D Interativo</button>
+      <button class="vtab" id="tabnet" onclick="switchView('net')">📐 Planificação</button>
     </div>
-    <textarea id="inp" rows="1" placeholder="Digite sua resposta ou pergunta..."></textarea>
-    <button id="sbtn" onclick="send()">➤</button>
+    <!-- Canvas area -->
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="threeCanvas"></canvas>
+      <canvas id="netCanvas"></canvas>
+      <div class="rotate-hint" id="rotateHint">🖱 Arraste para girar · Scroll para zoom</div>
+    </div>
+    <!-- Solid selector -->
+    <div class="solid-bar">
+      <button class="solid-btn active" data-solid="cilindro" onclick="setSolid('cilindro')"><span class="sb-emoji">🥤</span><span class="sb-label">Cilindro</span></button>
+      <button class="solid-btn" data-solid="cone" onclick="setSolid('cone')"><span class="sb-emoji">🍦</span><span class="sb-label">Cone</span></button>
+      <button class="solid-btn" data-solid="esfera" onclick="setSolid('esfera')"><span class="sb-emoji">🔮</span><span class="sb-label">Esfera</span></button>
+      <button class="solid-btn" data-solid="piramide" onclick="setSolid('piramide')"><span class="sb-emoji">🔺</span><span class="sb-label">Pirâmide</span></button>
+      <button class="solid-btn" data-solid="cubo" onclick="setSolid('cubo')"><span class="sb-emoji">📦</span><span class="sb-label">Cubo</span></button>
+      <button class="solid-btn" data-solid="prisma" onclick="setSolid('prisma')"><span class="sb-emoji">🧊</span><span class="sb-label">Prisma</span></button>
+    </div>
+    <!-- Info -->
+    <div class="solid-info">
+      <div class="solid-info-name" id="solidName">🥤 Cilindro</div>
+      <div class="solid-info-els" id="solidEls">2 bases circulares · 1 face lateral · raio r · altura h</div>
+    </div>
   </div>
-  <div class="hint">Enter para enviar · Shift+Enter para nova linha · 🖼️ para enviar uma questão em imagem</div>
 </div>
 
 <script>
-/* ══ SYSTEM PROMPT ══════════════════════════════════════════════════════
-   IMPORTANTE: Toda a pedagogia acontece de forma INVISÍVEL ao aluno.
-   Nunca mencione: níveis, etapas, diagnóstico, Pólya, Vygotsky, Bloom,
-   "você está no nível X", "etapa 1", "vamos para a próxima etapa", etc.
-   O aluno deve sentir que está apenas conversando naturalmente.
-════════════════════════════════════════════════════════════════════════ */
-const SYS = `Você é MatIA, um tutor de Geometria Espacial para o Ensino Médio.
-Seu estilo é descontraído, próximo e empolgante — como um amigo que manja muito de geometria.
+/* ══ GLOBAL STATE (declared first to avoid temporal dead zone) ══ */
+let KEY='';
+let scene,camera,renderer,currentMesh=null,currentSolid='cilindro',currentView='3d';
+let rotY=0.6,rotX=0.25,zoom=1,isPointerDown=false,lastPX=0,lastPY=0,autoRotate=true;
+let threeReady=false;
+let viewerOpen=false;
+let hist=[],busy=false,started=false,pendingImage=null;
 
-REGRA DE OURO: toda a sua pedagogia é INVISÍVEL. Nunca diga ao aluno que está fazendo um diagnóstico, aplicando uma metodologia, passando por etapas ou classificando-o em algum nível. Conduza tudo de forma natural, como se fosse conversa.
-
-JAMAIS diga ou escreva frases como:
-- "Etapa 1", "Etapa 2", "vamos para a próxima etapa"
-- "Nível 1", "Nível 2", "você está no nível X"
-- "Vou te diagnosticar", "vou avaliar seu conhecimento"
-- "Segundo o método de Pólya...", "aplicando a ZDP..."
-- "Você é iniciante / avançado / em desenvolvimento"
-- "Diagnóstico concluído"
-
-QUANDO RECEBER UMA IMAGEM:
-Analise a questão com atenção. Identifique o sólido e os dados. Conduza o aluno à solução fazendo perguntas, nunca resolvendo diretamente. Comece com algo natural como: "Que questão interessante! O que você já conseguiu identificar aqui?"
-
-AO INICIAR UMA CONVERSA SOBRE UM SÓLIDO:
-1. Comece com uma curiosidade histórica ou conexão com o mundo real — algo que desperte interesse genuíno.
-2. Faça perguntas naturais para entender o que o aluno já sabe. Exemplo: "Antes de calcular qualquer coisa, me fala — o que vem na sua cabeça quando pensa num cilindro?" Isso parece curiosidade, não avaliação.
-3. Se o aluno demonstrar dificuldade, comece pelo mais simples. Se demonstrar domínio, avance para algo mais desafiador. Faça isso naturalmente, sem anunciar.
-
-AO RESOLVER PROBLEMAS:
-Conduza o aluno pelas etapas de forma conversacional:
-- Em vez de "Etapa 1: compreender o problema", diga: "Antes de calcular qualquer coisa — o que exatamente a questão quer descobrir?"
-- Em vez de "Etapa 2: planejar", diga: "Que fórmula você acha que encaixa aqui?"
-- Em vez de "Etapa 3: executar", diga: "Tenta substituir os valores aí e me mostra o que dá!"
-- Em vez de "Etapa 4: verificar", diga: "Esse resultado faz sentido pra você? Consegue imaginar isso no mundo real?"
-
-QUANDO O ALUNO ERRAR:
-Nunca corrija direto. Ajude com perguntas progressivamente mais guiadas:
-- Primeiro: "Hmm, relê o enunciado — o que o problema quer encontrar mesmo?"
-- Se ainda errar: "Qual fórmula você usou? Deixa eu te dar um lembrete: [fórmula]"
-- Se ainda errar: "Vamos com um exemplo menor. [exemplo simples]. Agora tenta de novo!"
-- Só depois explique passo a passo, de forma natural.
-
-CELEBRE sempre as tentativas: "Quase! Você pegou a ideia, só escorregou num detalhe."
-Nunca deixe o aluno se sentir mal por errar.
-
-APÓS RESOLVER: conecte ao ENEM de forma animada — "Olha, esse tipo de questão cai bastante no ENEM! A pegadinha que todo mundo cai é..." — e ofereça um desafio se ele quiser.
-
-FORMATAÇÃO:
-- ** negrito para termos importantes
-- * itálico para ênfase
-- > blockquote para curiosidades e dicas especiais
-- - para listas
-- [F: expressão] para fórmulas matemáticas (serão exibidas com destaque)
-- [E: mensagem] para alertas ENEM (serão exibidos com destaque)
-- Máximo 4 parágrafos por resposta
-- UMA pergunta por vez — nunca várias seguidas
-- Linguagem jovem, próxima, com emojis moderados 📐🔺🔮📦🎯💡`;
-
-/* ══ STATE ══════════════════════════════════════════════ */
-let hist=[],busy=false,started=false,KEY='';
-let pendingImage=null;
-
-/* ══ THEME ══════════════════════════════════════════════ */
-function initTheme(){
-  const t=localStorage.getItem('matia_theme')||'dark';
-  applyTheme(t);
-}
+/* ══ THEME ══════════════════════════════════════════════════ */
+function initTheme(){applyTheme(localStorage.getItem('matia_theme')||'dark')}
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);
   document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙';
   localStorage.setItem('matia_theme',t);
+  if(renderer) renderer.setClearColor(t==='dark'?0x0d1117:0xeef1f8,1);
+  if(currentSolid&&currentView==='net') drawNet(currentSolid);
 }
-function toggleTheme(){
-  const cur=document.documentElement.getAttribute('data-theme');
-  applyTheme(cur==='dark'?'light':'dark');
-}
+function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')}
 initTheme();
 
-/* ══ API KEY ═════════════════════════════════════════════ */
-function initKey(){
-  const k=localStorage.getItem('matia_key');
-  if(k){KEY=k;document.getElementById('modal').classList.add('hidden');}
-}
-function saveKey(){
-  const v=document.getElementById('keyinp').value.trim();
-  const e=document.getElementById('kerr');
-  if(!v.startsWith('sk-')){e.style.display='block';return;}
-  e.style.display='none';
-  KEY=v;localStorage.setItem('matia_key',v);
-  document.getElementById('modal').classList.add('hidden');
-}
-function changeKey(){
-  localStorage.removeItem('matia_key');KEY='';
-  document.getElementById('keyinp').value='';
-  document.getElementById('modal').classList.remove('hidden');
-}
+/* ══ API KEY ════════════════════════════════════════════════ */
+function initKey(){const k=localStorage.getItem('matia_key');if(k){KEY=k;document.getElementById('modal').classList.add('hidden')}}
+function saveKey(){const v=document.getElementById('keyinp').value.trim();const e=document.getElementById('kerr');if(!v.startsWith('sk-')){e.style.display='block';return}e.style.display='none';KEY=v;localStorage.setItem('matia_key',v);document.getElementById('modal').classList.add('hidden')}
+function changeKey(){localStorage.removeItem('matia_key');KEY='';document.getElementById('keyinp').value='';document.getElementById('modal').classList.remove('hidden')}
 initKey();
 
-/* ══ IMAGE HANDLING ══════════════════════════════════════ */
+/* ══ MATIA SYSTEM PROMPT ════════════════════════════════════ */
+const SYS=`Você é MatIA, tutor de Geometria Espacial para o Ensino Médio. Seu estilo é descontraído, empolgante e socrático — você guia, nunca entrega.
+
+════════════════════════════════════════════
+REGRA ABSOLUTA — PEDAGOGIA INVISÍVEL
+════════════════════════════════════════════
+Toda a estrutura pedagógica acontece nos bastidores. O aluno NUNCA deve perceber etapas, níveis ou metodologias. Fale como pessoa, não como sistema.
+
+JAMAIS escreva: "Etapa 1/2/3/4", "Nível 1/2/3", "diagnóstico", "Pólya", "Vygotsky", "Bloom", "Duval", "ZDP", "scaffolding", "registro semiótico", "você é iniciante/avançado", "próxima etapa", "vou te avaliar".
+
+════════════════════════════════════════════
+DIAGNÓSTICO INICIAL (invisível)
+════════════════════════════════════════════
+Ao iniciar: abra com curiosidade histórica ou conexão surpreendente com o mundo real. Em seguida, faça perguntas naturais para calibrar o nível do aluno — isso parece curiosidade, não avaliação.
+
+Com base nas respostas, identifique internamente em qual nível cognitivo o aluno está:
+• LEMBRAR — não reconhece elementos básicos do sólido
+• COMPREENDER — reconhece mas não sabe calcular
+• APLICAR — calcula mas de forma mecânica, sem interpretar
+• ANALISAR — calcula e questiona relações ("por que o cone é 1/3 do cilindro?")
+• AVALIAR — compara e justifica escolhas ("qual embalagem usa menos material?")
+• CRIAR — formula problemas próprios a partir do cotidiano
+
+Inicie a sessão no nível identificado e avance APENAS quando o aluno demonstrar domínio real. Nunca anuncie o nível — apenas ajuste o que pergunta.
+
+════════════════════════════════════════════
+VISUALIZADOR 3D E PLANIFICAÇÃO — MEDIAÇÃO SEMIÓTICA
+════════════════════════════════════════════
+O sistema possui um visualizador 3D interativo e uma planificação (painel lateral). Use essas ferramentas como parte natural da mediação — elas existem para ajudar o aluno a ver o sólido antes de operar com fórmulas.
+
+Convide o aluno a usar o visualizador de forma natural:
+- "Dá uma olhada no modelo 3D no painel ao lado — consegue identificar o raio e a altura?"
+- "Experimenta girar o sólido. O que você vê quando olha de cima? E de lado?"
+- "Abre a planificação e me diz: quantas faces você identifica?"
+
+Isso não é opcional — é parte central da pedagogia: o aluno deve VER o sólido antes de calcular.
+
+════════════════════════════════════════════
+TEORIA DOS REGISTROS DE REPRESENTAÇÃO (Duval)
+════════════════════════════════════════════
+A compreensão matemática genuína exige que o aluno coordene três tipos de registros:
+
+• VISUAL: o modelo 3D, a planificação, o desenho do sólido
+• SIMBÓLICO: as fórmulas (V = πr²h, Al = 2πr·h, etc.)
+• DISCURSIVO: a descrição verbal do que está sendo calculado e por quê
+
+Sua missão é promover CONVERSÃO entre registros de forma natural:
+→ Do visual para o simbólico: "Você vê os dois círculos no topo e na base do cilindro? Como expressamos a área de cada um em fórmula?"
+→ Do simbólico para o discursivo: "O resultado foi 301 m³ — o que isso significa na prática? Quantas banheiras cabem aí?"
+→ Do discursivo para o visual: "Você descreveu um cone — abre o visualizador e confirma se a imagem corresponde ao que você imaginou."
+
+QUANDO DETECTAR DIFICULDADE DE COORDENAÇÃO (aluno aplica fórmula sem entender o que representa, ou calcula certo mas não consegue interpretar o resultado):
+→ Intervenha pedindo a passagem pelo registro visual ANTES de voltar ao simbólico.
+→ "Antes de refazer a conta, olha o sólido no visualizador. Qual parte é o raio? Qual é a altura?"
+
+════════════════════════════════════════════
+VISUALIZAÇÃO MENTAL ANTES DE QUALQUER FÓRMULA
+════════════════════════════════════════════
+NUNCA apresente fórmula antes de ativar a visualização. Sempre:
+1. Peça que o aluno imagine o sólido com analogia cotidiana (lata = cilindro, casquinha = cone, bola = esfera)
+2. Convide a interagir com o visualizador 3D e a planificação
+3. Apresente um Estudo de Caso contextualizado (engenharia, arquitetura, natureza, esporte)
+4. SÓ ENTÃO conduza para os cálculos
+
+════════════════════════════════════════════
+RESOLUÇÃO SOCRÁTICA (Pólya — 4 etapas, sem nomeá-las)
+════════════════════════════════════════════
+Conduza com perguntas, uma de cada vez. NUNCA revele a solução antes de percorrer esse percurso:
+→ "O que exatamente a questão quer descobrir? Área ou volume?" (compreender)
+→ "Que fórmula você acha que se encaixa aqui?" (planejar)
+→ "Tenta substituir os valores e me mostra o que dá!" (executar — NUNCA resolva pelo aluno)
+→ "Esse resultado faz sentido no mundo real? Consegue imaginar isso?" (verificar)
+
+A proporção de PERGUNTAS deve ser sempre maior que a de afirmações. Você é socrático por natureza.
+
+════════════════════════════════════════════
+DICAS PROGRESSIVAS (Scaffolding de Vygotsky — 3 níveis)
+════════════════════════════════════════════
+QUANDO O ALUNO ERRA, nunca corrija diretamente. Siga esta sequência:
+
+Nível 1 — Redirecionamento sutil (sem dar informação nova):
+"Hmm, relê o enunciado. O que o problema quer encontrar mesmo?"
+
+Nível 2 — Fórmula ou conceito-chave como lembrete casual:
+"Deixa eu te dar um lembrete: [fórmula]. Com isso em mãos, tenta de novo!"
+
+Nível 3 — Exemplo análogo mais simples:
+"Vamos dar um passo atrás. Me responde isso primeiro: [problema menor]. Ótimo! Agora aplica a mesma lógica."
+
+Somente após os 3 níveis: explique passo a passo, de forma conversacional.
+
+SEMPRE reconheça a tentativa antes de corrigir: "Quase!", "Boa tentativa!", "Você pegou a ideia, só escorregou num detalhe."
+
+════════════════════════════════════════════
+CELEBRAÇÃO E TOM
+════════════════════════════════════════════
+QUANDO ACERTA: celebre SEMPRE antes de avançar:
+"Isso!", "Perfeito!", "Exatamente!", "Acertou em cheio!", "Show!", "Mandou bem!", "Era exatamente isso!"
+
+ALUNO COM PRESSA: NUNCA entregue o resultado numérico final. Seja simpático mas firme:
+"Haha entendo a pressa! Mas juro que é rapidinho — me responde só isso: [pergunta simples que leva à solução]. Você consegue!"
+
+ALUNO AVANÇADO: se demonstrou domínio, avance direto para análise ou criação. NÃO repita o básico.
+
+════════════════════════════════════════════
+CONEXÃO COM O ENEM
+════════════════════════════════════════════
+Após resolver: conecte ao ENEM de forma animada, cite a pegadinha específica e ofereça Desafio ENEM opcional.
+
+════════════════════════════════════════════
+IMAGENS ENVIADAS PELO ALUNO
+════════════════════════════════════════════
+Analise a questão com cuidado. Identifique o sólido, os dados e os registros presentes (visual? simbólico?). Comece: "Que questão interessante! O que você já identificou nessa imagem?"
+
+════════════════════════════════════════════
+FORMATAÇÃO
+════════════════════════════════════════════
+• Máximo 4 parágrafos por resposta
+• UMA pergunta por vez — nunca várias seguidas
+• ** negrito em termos importantes, * itálico, > blockquote para curiosidades
+• [F: expressão] para fórmulas destacadas
+• [E: mensagem] para alertas ENEM destacados
+• Linguagem jovem, emojis moderados 📐🔺🔮📦🎯💡`;
+
+/* ══ SOLID CONFIGS ══════════════════════════════════════════ */
+const SOLIDS={
+  cilindro:{color:0x4f8cff,hex:'#4f8cff',label:'🥤 Cilindro',els:'2 bases circulares · 1 face lateral · raio r · altura h'},
+  cone:{color:0xa78bfa,hex:'#a78bfa',label:'🍦 Cone',els:'1 base circular · 1 face lateral cônica · geratriz g · altura h · raio r'},
+  esfera:{color:0x34d399,hex:'#34d399',label:'🔮 Esfera',els:'superfície contínua · raio r · diâmetro · centro · meridianos · paralelos'},
+  piramide:{color:0xfbbf24,hex:'#fbbf24',label:'🔺 Pirâmide Quadrangular',els:'1 base quadrada · 4 faces triangulares · vértice · apótema · altura h'},
+  cubo:{color:0xf87171,hex:'#f87171',label:'📦 Cubo / Paralelepípedo',els:'6 faces · 12 arestas · 8 vértices · 3 dimensões a, b, c · diagonal d'},
+  prisma:{color:0x60a5fa,hex:'#60a5fa',label:'🧊 Prisma Triangular',els:'2 bases triangulares · 3 faces retangulares · 6 vértices · 9 arestas'},
+};
+
+/* ══ THREE.JS SETUP ═════════════════════════════════════════ */
+
+function initThree(){
+  const canvas=document.getElementById('threeCanvas');
+  scene=new THREE.Scene();
+  camera=new THREE.PerspectiveCamera(48,1,0.1,100);
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setClearColor(isDark?0x0d1117:0xeef1f8,1);
+  renderer.shadowMap.enabled=true;
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xffffff,0.5));
+  const dl=new THREE.DirectionalLight(0xffffff,0.9);
+  dl.position.set(4,6,5);scene.add(dl);
+  const dl2=new THREE.DirectionalLight(0x8899ff,0.3);
+  dl2.position.set(-4,-2,-3);scene.add(dl2);
+
+  // Grid helper (subtle)
+  const grid=new THREE.GridHelper(8,16,0x1e2840,0x1e2840);
+  grid.position.y=-1.8;scene.add(grid);
+
+  updateCam();
+
+  // Events
+  canvas.addEventListener('mousedown',e=>{isPointerDown=true;autoRotate=false;lastPX=e.clientX;lastPY=e.clientY;document.getElementById('rotateHint').style.opacity='0'});
+  window.addEventListener('mouseup',()=>{isPointerDown=false});
+  canvas.addEventListener('mousemove',e=>{
+    if(!isPointerDown)return;
+    rotY+=(e.clientX-lastPX)*0.009;
+    rotX+=(e.clientY-lastPY)*0.009;
+    rotX=Math.max(-1.3,Math.min(1.3,rotX));
+    lastPX=e.clientX;lastPY=e.clientY;updateCam();
+  });
+  canvas.addEventListener('wheel',e=>{
+    zoom*=e.deltaY>0?1.12:0.9;
+    zoom=Math.max(0.4,Math.min(3.5,zoom));
+    updateCam();e.preventDefault();
+  },{passive:false});
+  // Touch
+  let lTX,lTY;
+  canvas.addEventListener('touchstart',e=>{autoRotate=false;lTX=e.touches[0].clientX;lTY=e.touches[0].clientY;document.getElementById('rotateHint').style.opacity='0'},{passive:true});
+  canvas.addEventListener('touchmove',e=>{
+    rotY+=(e.touches[0].clientX-lTX)*0.009;
+    rotX+=(e.touches[0].clientY-lTY)*0.009;
+    rotX=Math.max(-1.3,Math.min(1.3,rotX));
+    lTX=e.touches[0].clientX;lTY=e.touches[0].clientY;
+    updateCam();e.preventDefault();
+  },{passive:false});
+
+  // Resize
+  const ro=new ResizeObserver(resizeThree);
+  ro.observe(document.getElementById('canvasWrap'));
+  resizeThree();
+
+  threeReady=true;
+  loadSolid('cilindro');
+  animate();
+}
+
+function updateCam(){
+  const r=4.5*zoom;
+  camera.position.set(r*Math.cos(rotX)*Math.sin(rotY),r*Math.sin(rotX),r*Math.cos(rotX)*Math.cos(rotY));
+  camera.lookAt(0,0,0);
+}
+
+function resizeThree(){
+  const wrap=document.getElementById('canvasWrap');
+  const w=wrap.clientWidth,h=wrap.clientHeight;
+  if(!w||!h||!renderer)return;
+  renderer.setSize(w,h,false);
+  camera.aspect=w/h;camera.updateProjectionMatrix();
+  resizeNetCanvas();
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  if(autoRotate){rotY+=0.004;updateCam()}
+  if(renderer&&scene&&camera)renderer.render(scene,camera);
+}
+
+/* ══ CREATE GEOMETRIES ══════════════════════════════════════ */
+function createPyramidGeo(){
+  const geo=new THREE.BufferGeometry();
+  const s=1.15,h=1.8;
+  const v=new Float32Array([-s,-h/2,-s, s,-h/2,-s, s,-h/2,s, -s,-h/2,s, 0,h/2,0]);
+  geo.setAttribute('position',new THREE.BufferAttribute(v,3));
+  geo.setIndex([0,2,1, 0,3,2, 0,1,4, 1,2,4, 2,3,4, 3,0,4]);
+  geo.computeVertexNormals();return geo;
+}
+function createPrismaGeo(){
+  const geo=new THREE.BufferGeometry();
+  const v=new Float32Array([0,-1,1.1, -1,-1,-0.65, 1,-1,-0.65, 0,1,1.1, -1,1,-0.65, 1,1,-0.65]);
+  geo.setAttribute('position',new THREE.BufferAttribute(v,3));
+  geo.setIndex([0,2,1, 3,4,5, 0,1,4,0,4,3, 1,2,5,1,5,4, 2,0,3,2,3,5]);
+  geo.computeVertexNormals();return geo;
+}
+function makeSolidGeo(name){
+  switch(name){
+    case 'cilindro':return new THREE.CylinderGeometry(1,1,2.2,40);
+    case 'cone':return new THREE.ConeGeometry(1.1,2.2,40);
+    case 'esfera':return new THREE.SphereGeometry(1.3,40,40);
+    case 'piramide':return createPyramidGeo();
+    case 'cubo':return new THREE.BoxGeometry(1.9,1.9,1.9);
+    case 'prisma':return createPrismaGeo();
+  }
+}
+
+function loadSolid(name){
+  if(!threeReady)return;
+  const cfg=SOLIDS[name];if(!cfg)return;
+  currentSolid=name;
+
+  if(currentMesh){scene.remove(currentMesh);currentMesh=null;}
+
+  const geo=makeSolidGeo(name);
+  const mat=new THREE.MeshPhongMaterial({color:cfg.color,transparent:true,opacity:0.84,shininess:70,specular:0x555555});
+  const mesh=new THREE.Mesh(geo,mat);
+
+  // Edge lines
+  const edges=new THREE.EdgesGeometry(geo,25);
+  const lineMat=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.3});
+  const wf=new THREE.LineSegments(edges,lineMat);
+
+  const grp=new THREE.Group();
+  grp.add(mesh);grp.add(wf);
+  currentMesh=grp;scene.add(grp);
+
+  // UI
+  document.getElementById('solidName').textContent=cfg.label;
+  document.getElementById('solidEls').textContent=cfg.els;
+  document.querySelectorAll('.solid-btn').forEach(b=>b.classList.toggle('active',b.dataset.solid===name));
+
+  autoRotate=true;
+  if(currentView==='net')drawNet(name);
+}
+
+function setSolid(name){
+  loadSolid(name);
+  if(currentView==='net')drawNet(name);
+}
+
+/* ══ VIEW SWITCHER ══════════════════════════════════════════ */
+function switchView(v){
+  currentView=v;
+  document.getElementById('tab3d').classList.toggle('active',v==='3d');
+  document.getElementById('tabnet').classList.toggle('active',v==='net');
+  document.getElementById('threeCanvas').style.display=v==='3d'?'block':'none';
+  document.getElementById('netCanvas').style.display=v==='net'?'block':'none';
+  document.getElementById('rotateHint').style.display=v==='3d'?'block':'none';
+  if(v==='net'){resizeNetCanvas();drawNet(currentSolid);}
+}
+
+/* ══ NET CANVAS ══════════════════════════════════════════════ */
+function resizeNetCanvas(){
+  const canvas=document.getElementById('netCanvas');
+  const wrap=document.getElementById('canvasWrap');
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=wrap.clientWidth,h=wrap.clientHeight;
+  if(!w||!h)return;
+  canvas.width=w*dpr;canvas.height=h*dpr;
+  canvas.style.width=w+'px';canvas.style.height=h+'px';
+  if(currentView==='net')drawNet(currentSolid);
+}
+
+function netCtx(){
+  const canvas=document.getElementById('netCanvas');
+  const ctx=canvas.getContext('2d');
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return{ctx,w:canvas.clientWidth,h:canvas.clientHeight};
+}
+
+function netSetup(c,textCol,bgCol){
+  const{ctx,w,h}=netCtx();
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle=bgCol;ctx.fillRect(0,0,w,h);
+  return{ctx,w,h};
+}
+
+function drawNet(name){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const tc=isDark?'#e8eaf0':'#1a1d2e';
+  const bg=isDark?'#0d1117':'#eef1f8';
+  const c=SOLIDS[name]?.hex||'#4f8cff';
+  const ca=c+'45'; // color with alpha
+
+  switch(name){
+    case 'cilindro': netCilindro(c,ca,tc,bg);break;
+    case 'cone':     netCone(c,ca,tc,bg);break;
+    case 'esfera':   netEsfera(c,ca,tc,bg);break;
+    case 'piramide': netPiramide(c,ca,tc,bg);break;
+    case 'cubo':     netCubo(c,ca,tc,bg);break;
+    case 'prisma':   netPrisma(c,ca,tc,bg);break;
+  }
+}
+
+/* ──── Cilindro net ─────────────────────────────────────── */
+function netCilindro(c,ca,tc,bg){
+  const{ctx,w,h}=netSetup(c,tc,bg);
+  const r=Math.min(w,h)*0.1; const rw=Math.min(w*0.72,2.8*r); const rh=r*2.4;
+  const cx=w/2; const tot=r*2+12+rh+12+r*2; const sy=(h-tot)/2;
+  const cy1=sy+r; const ry=cy1+r+12; const cy2=ry+rh+12+r;
+
+  function circ(cy,dash){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=ca;ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=2;if(dash)ctx.setLineDash([5,3]);ctx.stroke();ctx.setLineDash([])}
+  circ(cy1,true);circ(cy2,true);
+  ctx.fillStyle=ca;ctx.fillRect(cx-rw/2,ry,rw,rh);
+  ctx.strokeStyle=c;ctx.lineWidth=2;ctx.strokeRect(cx-rw/2,ry,rw,rh);
+
+  // Dashed connects
+  ctx.strokeStyle=c+'88';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+  [[cx-rw/2,cy1,cx-rw/2,ry],[cx+rw/2,cy1,cx+rw/2,ry],[cx-rw/2,ry+rh,cx-rw/2,cy2],[cx+rw/2,ry+rh,cx+rw/2,cy2]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()});
+  ctx.setLineDash([]);
+
+  ctx.textAlign='center';ctx.font=`500 11px 'DM Mono',monospace`;
+  ctx.fillStyle=c;ctx.fillText('base (π·r²)',cx,cy1+4);ctx.fillText('base (π·r²)',cx,cy2+4);
+  ctx.fillStyle=tc;ctx.fillText('face lateral  2π·r × h',cx,ry+rh/2+4);
+
+  // Dim arrow r
+  ctx.strokeStyle=tc+'99';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,cy1-r-2);ctx.lineTo(cx+r,cy1-r-2);ctx.stroke();
+  ctx.fillStyle=tc;ctx.font=`500 10px 'DM Mono',monospace`;ctx.fillText('r',cx+r/2,cy1-r-6);
+
+  title(ctx,w,'📐 Planificação — Cilindro',c);
+}
+
+/* ──── Cone net ─────────────────────────────────────────── */
+function netCone(c,ca,tc,bg){
+  const{ctx,w,h}=netSetup(c,tc,bg);
+  const g=Math.min(w,h)*0.34; const r=g*0.42;
+  const angle=2*Math.PI*r/g;
+  const cx=w/2; const cy=h*0.42;
+
+  // Sector (lateral face)
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,g,-Math.PI/2-angle/2,-Math.PI/2+angle/2);ctx.closePath();
+  ctx.fillStyle=ca;ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=2;ctx.stroke();
+
+  // Base circle
+  const bcy=cy+g*0.5+r+18;
+  ctx.beginPath();ctx.arc(cx,bcy,r,0,Math.PI*2);
+  ctx.fillStyle=ca;ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=2;ctx.setLineDash([5,3]);ctx.stroke();ctx.setLineDash([]);
+
+  // Labels
+  ctx.textAlign='center';ctx.font=`500 11px 'DM Mono',monospace`;
+  ctx.fillStyle=tc;ctx.fillText('face lateral (π·r·g)',cx,cy-8);
+  ctx.fillStyle=c;ctx.fillText('base (π·r²)',cx,bcy+4);
+
+  // Geratriz label
+  const midAngle=-Math.PI/2;
+  ctx.fillStyle=tc;ctx.font=`500 10px 'DM Mono',monospace`;
+  ctx.fillText('g (geratriz)',cx+g*0.55*Math.cos(midAngle-angle/2-0.15),cy+g*0.55*Math.sin(midAngle-angle/2-0.15));
+
+  title(ctx,w,'📐 Planificação — Cone',c);
+}
+
+/* ──── Esfera net ───────────────────────────────────────── */
+function netEsfera(c,ca,tc,bg){
+  const{ctx,w,h}=netSetup(c,tc,bg);
+  const n=8; const sw=Math.min(w*0.8,320); const sh=Math.min(h*0.5,160);
+  const ox=(w-sw)/2; const oy=h*0.3;
+
+  // Draw orange-peel segments
+  for(let i=0;i<n;i++){
+    const x=ox+i*(sw/n);
+    const mid=x+sw/(n*2);
+    const bulge=(sw/n)*0.38;
+    ctx.beginPath();ctx.moveTo(mid,oy);
+    ctx.bezierCurveTo(x+bulge,oy+sh*0.3,x+bulge,oy+sh*0.7,mid,oy+sh);
+    ctx.bezierCurveTo(x+sw/n-bulge,oy+sh*0.7,x+sw/n-bulge,oy+sh*0.3,mid,oy);
+    ctx.fillStyle=ca;ctx.fill();
+    ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.stroke();
+  }
+
+  ctx.textAlign='center';ctx.font=`500 11px 'DM Mono',monospace`;
+  ctx.fillStyle=tc;ctx.fillText('Esfera não pode ser planificada perfeitamente.',w/2,oy+sh+28);
+  ctx.fillStyle=tc;ctx.font=`11px 'DM Sans',sans-serif`;
+  ctx.fillText('Esta aproximação ("casca de laranja") ilustra os fusos esféricos.',w/2,oy+sh+46);
+  ctx.fillStyle=c;ctx.fillText('Área total = 4·π·r²',w/2,oy+sh+68);
+
+  title(ctx,w,'📐 Planificação — Esfera (aproximada)',c);
+}
+
+/* ──── Pirâmide net ─────────────────────────────────────── */
+function netPiramide(c,ca,tc,bg){
+  const{ctx,w,h}=netSetup(c,tc,bg);
+  const s=Math.min(w,h)*0.22; const ah=s*1.1;
+  const cx=w/2; const cy=h/2;
+
+  // Base square
+  const bx=cx-s/2,by=cy-s/2;
+  ctx.fillStyle=ca;ctx.fillRect(bx,by,s,s);
+  ctx.strokeStyle=c;ctx.lineWidth=2;ctx.strokeRect(bx,by,s,s);
+
+  // 4 triangles
+  function tri(x1,y1,x2,y2,px,py){
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineTo(px,py);ctx.closePath();
+    ctx.fillStyle=ca;ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=2;ctx.setLineDash([]);ctx.stroke();
+    // Fold edge (dashed)
+    ctx.strokeStyle=c+'88';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);
+  }
+
+  tri(bx,by,bx+s,by,cx,by-ah);           // top
+  tri(bx,by+s,bx+s,by+s,cx,by+s+ah);     // bottom
+  tri(bx,by,bx,by+s,bx-ah,cy);           // left
+  tri(bx+s,by,bx+s,by+s,bx+s+ah,cy);    // right
+
+  ctx.textAlign='center';ctx.font=`500 11px 'DM Mono',monospace`;
+  ctx.fillStyle=c;ctx.fillText('base (a²)',cx,cy+4);
+  ctx.fillStyle=tc;ctx.fillText('face triangular',cx,by-ah/2);ctx.fillText('face triangular',cx,by+s+ah/2);
+  ctx.save();ctx.translate(bx-ah/2,cy);ctx.rotate(-Math.PI/2);ctx.fillText('face triangular',0,0);ctx.restore();
+  ctx.save();ctx.translate(bx+s+ah/2,cy);ctx.rotate(Math.PI/2);ctx.fillText('face triangular',0,0);ctx.restore();
+
+  title(ctx,w,'📐 Planificação — Pirâmide Quadrangular',c);
+}
+
+/* ──── Cubo net ─────────────────────────────────────────── */
+function netCubo(c,ca,tc,bg){
+  const{ctx,w,h}=netSetup(c,tc,bg);
+  const s=Math.min(w/(4.5),h/(4.5),70);
+  const ox=w/2-s*1.5; const oy=h/2-s*2;
+
+  // Cross shape: col 2 = rows 0-3, row 1 = cols 0-3
+  const faces=[
+    [1,0],[0,1],[1,1],[2,1],[3,1],[1,2]
+  ];
+
+  faces.forEach(([fc,fr],i)=>{
+    const x=ox+fc*s,y=oy+fr*s;
+    ctx.fillStyle=ca;ctx.fillRect(x,y,s,s);
+    ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.strokeRect(x,y,s,s);
+
+    // Fold lines (dashed between faces)
+    ctx.strokeStyle=c+'77';ctx.lineWidth=1;ctx.setLineDash([3,2]);
+    ctx.strokeRect(x+0.5,y+0.5,s-1,s-1);ctx.setLineDash([]);
+
+    const labels=['topo','frente','direita','atrás','esquerda','base'];
+    ctx.fillStyle=tc;ctx.textAlign='center';ctx.font=`10px 'DM Mono',monospace`;
+    ctx.fillText(labels[i],x+s/2,y+s/2+3);
+  });
+
+  title(ctx,w,'📐 Planificação — Cubo (6 faces)',c);
+}
+
+/* ──── Prisma Triangular net ────────────────────────────── */
+function netPrisma(c,ca,tc,bg){
+  const{ctx,w,h}=netSetup(c,tc,bg);
+  const rw=Math.min(w*0.22,80); const rh=Math.min(h*0.28,90);
+  const th=rh*0.7; // triangle height
+  const tw=rw; // triangle base (same as rect width)
+  const ox=(w-rw*3)/2; const ry=h/2-rh/2;
+
+  // 3 rectangles (lateral faces)
+  for(let i=0;i<3;i++){
+    const x=ox+i*rw;
+    ctx.fillStyle=ca;ctx.fillRect(x,ry,rw,rh);
+    ctx.strokeStyle=c;ctx.lineWidth=2;ctx.strokeRect(x,ry,rw,rh);
+    const lbls=['face 1','face 2','face 3'];
+    ctx.fillStyle=tc;ctx.textAlign='center';ctx.font=`10px 'DM Mono',monospace`;
+    ctx.fillText(lbls[i],x+rw/2,ry+rh/2+3);
+  }
+
+  // Triangles (bases) — left and right
+  function drawTri(cx,cy,up){
+    const dir=up?-1:1;
+    ctx.beginPath();ctx.moveTo(cx-tw/2,cy);ctx.lineTo(cx+tw/2,cy);ctx.lineTo(cx,cy+dir*th);ctx.closePath();
+    ctx.fillStyle=ca;ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle=c;ctx.textAlign='center';ctx.font=`500 10px 'DM Mono',monospace`;
+    ctx.fillText('base',cx,cy+dir*th/2+3);
+  }
+
+  const midx=ox+rw*1.5;
+  drawTri(midx,ry,true);   // top triangle (above middle rect)
+  drawTri(midx,ry+rh,false); // bottom triangle (below middle rect)
+
+  // Dashed fold lines
+  ctx.strokeStyle=c+'77';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(midx-tw/2,ry);ctx.lineTo(midx-tw/2,ry-th);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(midx+tw/2,ry);ctx.lineTo(midx+tw/2,ry-th);ctx.stroke();
+  ctx.setLineDash([]);
+
+  title(ctx,w,'📐 Planificação — Prisma Triangular',c);
+}
+
+/* ──── Title helper ─────────────────────────────────────── */
+function title(ctx,w,txt,c){
+  ctx.textAlign='center';ctx.font=`bold 13px 'Syne','DM Sans',sans-serif`;
+  ctx.fillStyle=c;ctx.fillText(txt,w/2,20);
+}
+
+/* ══ VIEWER TOGGLE ══════════════════════════════════════════ */
+function toggleViewer(){
+  viewerOpen=!viewerOpen;
+  document.getElementById('viewerSide').classList.toggle('open',viewerOpen);
+  document.getElementById('viewerToggle').classList.toggle('viewer-active',viewerOpen);
+  setTimeout(()=>{resizeThree();if(viewerOpen&&!threeReady)initThree();else if(viewerOpen&&threeReady){loadSolid(currentSolid);resizeThree();}},350);
+}
+
+/* ══ AUTO-DETECT SOLID FROM CHAT ════════════════════════════ */
+function detectSolid(text){
+  const t=text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(t.match(/\bcilindro/))return'cilindro';
+  if(t.match(/\bcone\b|conico|conica/))return'cone';
+  if(t.match(/\besfera|esferico|esfero/))return'esfera';
+  if(t.match(/\bpiramide|piramidal/))return'piramide';
+  if(t.match(/\bcubo\b|paralelepipedo/))return'cubo';
+  if(t.match(/\bprisma/))return'prisma';
+  return null;
+}
+
+/* ══ CHAT FUNCTIONS ═════════════════════════════════════════ */
 function handleImage(e){
-  const file=e.target.files[0];
-  if(!file)return;
+  const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=function(ev){
+  reader.onload=ev=>{
     const dataUrl=ev.target.result;
-    const base64=dataUrl.split(',')[1];
-    const mediaType=file.type||'image/jpeg';
-    pendingImage={base64,mediaType,dataUrl,name:file.name};
+    pendingImage={base64:dataUrl.split(',')[1],mediaType:file.type||'image/jpeg',dataUrl,name:file.name};
     document.getElementById('preview-thumb').src=dataUrl;
     document.getElementById('preview-name').textContent=file.name;
     document.getElementById('img-preview').style.display='flex';
-    if(!started){
-      document.getElementById('welcome').classList.add('gone');
-      document.getElementById('chips').style.display='flex';
-      started=true;
-    }
+    if(!started)startChat();
   };
-  reader.readAsDataURL(file);
-  e.target.value='';
+  reader.readAsDataURL(file);e.target.value='';
 }
-function removeImage(){
-  pendingImage=null;
-  document.getElementById('img-preview').style.display='none';
-  document.getElementById('preview-thumb').src='';
-}
+function removeImage(){pendingImage=null;document.getElementById('img-preview').style.display='none';document.getElementById('preview-thumb').src=''}
 
-/* ══ MARKDOWN RENDERER ═══════════════════════════════════ */
 function md(t){
   t=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   t=t.replace(/\[E:\s*([\s\S]*?)\]/g,(_,c)=>`<div class="en"><div class="en-t">💡 ENEM Alert</div>${c.trim()}</div>`);
@@ -368,106 +877,62 @@ function md(t){
   t=t.replace(/^[-•]\s(.+)$/gm,'<li>$1</li>');
   t=t.replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>');
   t=t.replace(/<\/ul>\s*<ul>/g,'');
-  return t.split('\n').map(l=>{
-    l=l.trim();if(!l)return'';
-    if(/^<(ul|div|blockquote|li)/.test(l))return l;
-    return`<p>${l}</p>`;
-  }).join('');
+  return t.split('\n').map(l=>{l=l.trim();if(!l)return'';if(/^<(ul|div|blockquote|li)/.test(l))return l;return`<p>${l}</p>`}).join('');
 }
 
-/* ══ ADD MESSAGE ═════════════════════════════════════════ */
 function addMsg(role,html,imgDataUrl=null,typing=false){
   const c=document.getElementById('chat');
   const w=document.createElement('div');w.className=`mw ${role==='ai'?'a':'u'}`;
   const av=document.createElement('div');av.className='av';av.textContent=role==='ai'?'📐':'👤';
   const b=document.createElement('div');b.className='bub';
-  if(typing){
-    b.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
-    w.id='typ';
-  } else {
-    if(imgDataUrl){
-      const img=document.createElement('img');
-      img.src=imgDataUrl;img.className='msg-img';
-      b.appendChild(img);
-    }
-    const d=document.createElement('div');
-    d.innerHTML=html;
-    b.appendChild(d);
-  }
-  w.appendChild(av);w.appendChild(b);c.appendChild(w);
-  c.scrollTop=c.scrollHeight;return w;
+  if(typing){b.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';w.id='typ';}
+  else{if(imgDataUrl){const img=document.createElement('img');img.src=imgDataUrl;img.className='msg-img';b.appendChild(img)}const d=document.createElement('div');d.innerHTML=html;b.appendChild(d)}
+  w.appendChild(av);w.appendChild(b);c.appendChild(w);c.scrollTop=c.scrollHeight;return w;
 }
 
-/* ══ API CALL ════════════════════════════════════════════ */
 async function callAPI(userText,image=null){
-  let content;
-  if(image){
-    content=[
-      {type:'image',source:{type:'base64',media_type:image.mediaType,data:image.base64}},
-      {type:'text',text:userText||'Pode me ajudar a resolver essa questão?'}
-    ];
-  } else {
-    content=userText;
-  }
+  const content=image?[{type:'image',source:{type:'base64',media_type:image.mediaType,data:image.base64}},{type:'text',text:userText||'Pode me ajudar com essa questão?'}]:userText;
   hist.push({role:'user',content});
   const typ=addMsg('ai','',null,true);
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':KEY,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:1000,
-        system:SYS,
-        messages:hist
-      })
-    });
-    const d=await r.json();
-    typ.remove();
-    if(d.error){
-      addMsg('ai',`<span class="err">Erro: ${d.error.message}</span>`);
-      hist.pop();return;
-    }
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,system:SYS,messages:hist})});
+    const d=await r.json();typ.remove();
+    if(d.error){addMsg('ai',`<span class="err">Erro: ${d.error.message}</span>`);hist.pop();return}
     const txt=d.content?.map(b=>b.text||'').join('')||'Sem resposta.';
     hist.push({role:'assistant',content:txt});
     addMsg('ai',md(txt));
-  }catch(e){
-    typ.remove();
-    addMsg('ai',`<span class="err">Erro de conexão: ${e.message}</span>`);
-    hist.pop();
-  }
+
+    // Auto-detect solid and open viewer
+    const solid=detectSolid(txt);
+    if(solid){
+      if(!viewerOpen){toggleViewer();setTimeout(()=>setSolid(solid),400);}
+      else setSolid(solid);
+    }
+  }catch(e){typ.remove();addMsg('ai',`<span class="err">Erro de conexão: ${e.message}</span>`);hist.pop()}
 }
 
-/* ══ SEND ════════════════════════════════════════════════ */
+function startChat(){
+  document.getElementById('welcome').classList.add('gone');
+  document.getElementById('chips').style.display='flex';
+  started=true;
+}
+
 async function send(ov){
   if(busy)return;
   const inp=document.getElementById('inp');
-  const txt=(ov||inp.value).trim();
-  const img=pendingImage;
+  const txt=(ov||inp.value).trim();const img=pendingImage;
   if(!txt&&!img)return;
-  if(!started){
-    document.getElementById('welcome').classList.add('gone');
-    document.getElementById('chips').style.display='flex';
-    started=true;
-  }
+  if(!started)startChat();
   inp.value='';inp.style.height='auto';
   addMsg('user',txt?md(txt):'<em>📎 Questão enviada por imagem</em>',img?img.dataUrl:null);
-  removeImage();
-  busy=true;document.getElementById('sbtn').disabled=true;
+  removeImage();busy=true;document.getElementById('sbtn').disabled=true;
   await callAPI(txt,img);
-  busy=false;document.getElementById('sbtn').disabled=false;
-  inp.focus();
+  busy=false;document.getElementById('sbtn').disabled=false;inp.focus();
 }
 
-function chip(t){send(t);}
-function go(t){send(`Quero estudar ${t}`);}
+function chip(t){send(t)}
+function go(t){send(`Quero estudar ${t}`)}
 
-/* ══ RESET ═══════════════════════════════════════════════ */
 function reset(){
   hist=[];busy=false;started=false;pendingImage=null;
   document.getElementById('chat').innerHTML='';
@@ -476,14 +941,8 @@ function reset(){
   document.getElementById('img-preview').style.display='none';
 }
 
-/* ══ INPUT EVENTS ════════════════════════════════════════ */
-document.getElementById('inp').addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}
-});
-document.getElementById('inp').addEventListener('input',function(){
-  this.style.height='auto';
-  this.style.height=Math.min(this.scrollHeight,110)+'px';
-});
+document.getElementById('inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+document.getElementById('inp').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'});
 </script>
 </body>
 </html>
